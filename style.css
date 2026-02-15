@@ -1,0 +1,143 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.nav{
+    height: 100px;
+    width: 100%;
+    background: #572c6d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0px 0px 30px 30px;
+}
+.logo{
+    height: 80px;
+    width: 80px;
+    border-radius: 10px;
+}
+.links{
+    display: flex;
+    gap: 50px;
+}
+.links a{
+    font-size: 15px;
+    font-family: Tahoma;
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    font-weight: bolder;
+}
+.CCS{
+    font-size: 20px;
+    font-family: Tahoma;
+    padding-right: 300px;
+    padding-left: 20px;
+    color: rgb(255, 255, 255);;
+}
+.main{
+    display: flex;
+    margin-top: 30px;
+    margin-left: 20px;
+}
+.left{
+    height: 600px;
+    width: 60%;
+    background: #572c6d;
+}
+
+.right{
+    height: 600px;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.left{
+    font-size: 20px;
+    font-family: Tahoma;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    border-radius: 100px;
+    gap: 25px;
+}
+
+.title2 {
+    display: flex;
+    margin-right: 179px;
+    margin-left: 130px;
+    color: white;
+    font-size: 50px;
+}
+.title3{
+    display: flex;
+    margin-right: 179px;
+    margin-left: 130px;
+    color: white;
+
+}
+.right img{
+    width: 70%;   
+    max-width: 700px; 
+    height: auto; 
+}
+.btn{
+    height: 50px;
+    width: 150px;
+    border-radius: 25px;
+    background: rgba(159, 46, 169, 0.714);
+    font-family: Tahoma;
+    color: white;
+}
+.btn-cons{
+    display: flex;
+    margin-left: 130px;
+    gap: 20px;
+}
+/* Register CSS */
+
+.register-container {
+    display: flex;
+    gap: 40px;
+    background: transparent;
+    justify-content: center;
+    margin-left: 350px;
+}
+.register-form {
+    background: #e9f62e;
+    padding: 35px;
+    width: 390px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(36, 35, 35, 0.08);
+    display: flex;
+    flex-direction: column;
+}
+.register-title {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    width: 100%;
+    color: rgb(32, 29, 29);
+}
+.register-form input {
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border-radius: 10px;
+    border: 1px solid #373333;
+    font-size: 14px;
+}
+.register-form button {
+    margin-top: 10px;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #f0f0f0;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.register-form button:hover {
+    background: #e0e0e0;
+}
