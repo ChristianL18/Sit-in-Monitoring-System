@@ -6,11 +6,16 @@
 .nav{
     height: 100px;
     width: 100%;
-    background: #572c6d;
+    background: #4D2FB2;
     display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 0px 0px 30px 30px;
+}
+.nav .links a:hover{
+    color: #d19bf0;
+    margin-top: -4px;
+    transition:  0.3s;
 }
 .logo{
     height: 80px;
@@ -27,6 +32,7 @@
     text-decoration: none;
     color: rgb(255, 255, 255);
     font-weight: bolder;
+    transition: 0.3s;
 }
 .CCS{
     font-size: 20px;
@@ -43,7 +49,7 @@
 .left{
     height: 600px;
     width: 60%;
-    background: #572c6d;
+    background: #4D2FB2;
 }
 
 .right{
@@ -86,9 +92,10 @@
     height: 50px;
     width: 150px;
     border-radius: 25px;
-    background: rgba(159, 46, 169, 0.714);
+    background: #B153D7;
     font-family: Tahoma;
     color: white;
+    border: none;
 }
 .btn-cons{
     display: flex;
@@ -204,4 +211,30 @@
 }
 .login-form button:hover {
     background: #e0e0e0;
+}
+
+/* Community */
+
+
+.main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.insideleft1{
+    height: 200px;
+    width: 350px;
+    background: rgb(225, 209, 240);
+    border-radius: 25px;
+}
+.insideleft1 h3{
+    font-family: Tahoma;
+    font-size: 20px;
+    margin-left: 15px;
+}
+.insideleft1 p{
+    font-family: Tahoma;
+    font-size: 15px;
+    margin-left: 30px;
+    margin-top: 20px;
 }
