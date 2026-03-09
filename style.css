@@ -220,6 +220,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 30px;
 }
 .insideleft1{
     height: 200px;
@@ -231,8 +232,46 @@
     font-family: Tahoma;
     font-size: 20px;
     margin-left: 15px;
+    margin-top: 20px;
 }
 .insideleft1 p{
+    font-family: Tahoma;
+    font-size: 15px;
+    margin-left: 30px;
+    margin-top: 30px;
+}
+.middle{
+    height: 200px;
+    width: 350px;
+    background: rgb(225, 209, 240);
+    border-radius: 25px;
+}
+
+.middle h3{
+    font-family: Tahoma;
+    font-size: 20px;
+    margin-left: 15px;
+    margin-top: 20px;
+}
+.middle p{
+    font-family: Tahoma;
+    font-size: 15px;
+    margin-left: 30px;
+    margin-top: 20px;
+}
+.right1{
+    height: 200px;
+    width: 350px;
+    background: rgb(225, 209, 240);
+    border-radius: 25px;
+}
+.right1 h3{
+    font-family: Tahoma;
+    font-size: 20px;
+    margin-left: 15px;
+    margin-top: 20px;
+}
+.right1 p{
     font-family: Tahoma;
     font-size: 15px;
     margin-left: 30px;
