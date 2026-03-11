@@ -82,6 +82,24 @@ app.post("/register", (req, res) => {
 
 });
 
+/* Login route */
+app.post("/login", (req, res) => {
+    const { idNumber, password } = req.body;
+    
+    const sql = `SELECT * FROM users WHERE id_number = ? AND password = ?`;
+    
+    db.get(sql, [idNumber, password], (err, user) => {
+        if (err) {
+            console.log(err);
+            res.json({ success: false, error: "Database error" });
+        } else if (user) {
+            res.json({ success: true, redirectUrl: "/pages/main.html" });
+        } else {
+            res.json({ success: false, error: "Invalid ID Number or Password" });
+        }
+    });
+});
+
 /* Start server */
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
