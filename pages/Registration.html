@@ -1,50 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Registration</title>
-<link rel="stylesheet" href="../style.css">
+    <meta charset="UTF-8">
+    <title>Registration</title>
+    <!-- FIXED: Removed the line break inside href -->
+    <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
 
-<h2>Register</h2>
+<div class="nav">
+    <!-- FIXED: Changed backslash \ to forward slash / for web compatibility -->
+    <img src="../images/ucmainccslogo-removebg-preview.png" class="logo" alt="">
+    <h1 class="CCS">CCS Sit-in Monitoring System</h1>
+    <div class="links">
+        <a href="../index.html">Home</a>
+        <a href="/pages/community.html">Community</a>
+        <a href="">About</a>
+        <a href="/pages/Login.html">Log In</a>
+        <a href="Registration.html">Register</a>
+    </div>
+</div>
 
-<form action="http://localhost:3000/register" method="POST">
+<!-- ADDED: Wrapper divs to match your CSS structure -->
+<div class="register-main">
+    <div class="register-container">
+        <!-- ADDED: class="register-form" -->
+        <form action="http://localhost:3000/register" method="POST" class="register-form">
+            
+            <!-- ADDED: Title that matches your CSS -->
+            <h2 class="register-title">Registration</h2>
 
-<input type="text" name="id_number" placeholder="ID Number" required>
+            <input type="text" name="id_number" placeholder="ID Number" required>
 
-<input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="first_name" placeholder="First Name" required>
 
-<input type="text" name="last_name" placeholder="Last Name" required>
+            <input type="text" name="last_name" placeholder="Last Name" required>
 
-<input type="text" name="middle_name" placeholder="Middle Name" required>
+            <input type="text" name="middle_name" placeholder="Middle Name" required>
 
-<select name="course_level" required>
-<option value="">Course Level</option>
-<option>1st Year</option>
-<option>2nd Year</option>
-<option>3rd Year</option>
-<option>4th Year</option>
-</select>
+            <select name="course_level" required>
+                <option value="">Course Level</option>
+               
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
 
-<select name="course" required>
-<option value="">Course</option>
-<option>BSIT</option>
-<option>BSCS</option>
-<option>BSIS</option>
-<option>BSCE</option>
-</select>
+            <select name="course" required>
+                <option value="">Course</option>
+                
+                <option value="BSIT">BSIT</option>
+                <option value="BSCS">BSCS</option>
+                <option value="BSIS">BSIS</option>
+                <option value="BSCE">BSCE</option>
+            </select>
 
-<input type="text" name="address" placeholder="Address" required>
+            <input type="text" name="address" placeholder="Address" required>
 
-<input type="email" name="email" placeholder="Email" required>
+            <input type="email" name="email" placeholder="Email" required>
 
-<input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="password" placeholder="Confirm Password" required>
 
-<button type="submit">Register</button>
+            <button type="submit">Register</button>
 
-</form>
+        </form>
+    </div>
+</div>
 
 </body>
 </html>
