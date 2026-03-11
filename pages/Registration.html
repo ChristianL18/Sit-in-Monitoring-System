@@ -1,69 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../style.css">
-    <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-  />
-    <title>Registration</title>
+<meta charset="UTF-8">
+<title>Registration</title>
+<link rel="stylesheet" href="../style.css">
 </head>
+
 <body>
 
-    <div class="nav">
-        <img src="../images\ucmainccslogo-removebg-preview.png" class="logo" alt="">
-        <h1 class="CCS">CCS Sit-in Monitoring System</h1>
-        <div class="links">
-            <a href="../index.html">Home</a>
-            <a href="/pages/community.html">Community</a>
-            <a href="">About</a>
-            <a href="/pages/Login.html">Log In</a>
-            <a href="Registration.html">Register</a>
-        </div>
-    </div>
+<h2>Register</h2>
 
-    <div class="register-main animate__animated animate__backInDown">
-        <div class="register-container">
-    <form class="register-form">
-        <h2 class="register-title">Register</h2>
-        <input type="text" placeholder="ID Number" required>
-        <input type="text" placeholder="First Name" required>
-        <input type="text" placeholder="Last Name" required>
-        <input type="text" placeholder="Middle Name" required>
-                <select required>
-        <option value="">Select Course Level</option>
-        <option>1st Year</option>
-        <option>2nd Year</option>
-        <option>3rd Year</option>
-        <option>4th Year</option>
-        <option>5ft Year</option>
-        </select>
-    </form>
+<form action="http://localhost:3000/register" method="POST">
 
-    <form class="register-form">
-        <select required>
-        <option value="">Select Course</option>
-        <option>BSIT</option>
-        <option>BSCS</option>
-        <option>BSIS</option>
-        <option>BSCE</option>
-        <option>BSHM</option>
-        <option>BEED</option>
-        <option>BSBA</option>
-        <option>BSA</option>
-        </select>
-        <input type="text" placeholder="Address" required>
-        <input type="email" placeholder="Email" required>
-        <input type="password" placeholder="Password" required>
-        <input type="password" placeholder="Confirm Password" required>
+<input type="text" name="id_number" placeholder="ID Number" required>
 
-        <button type="submit">Register</button>
-    </form>
-</div>
+<input type="text" name="first_name" placeholder="First Name" required>
 
-    </div>
+<input type="text" name="last_name" placeholder="Last Name" required>
+
+<input type="text" name="middle_name" placeholder="Middle Name" required>
+
+<select name="course_level" required>
+<option value="">Course Level</option>
+<option>1st Year</option>
+<option>2nd Year</option>
+<option>3rd Year</option>
+<option>4th Year</option>
+</select>
+
+<select name="course" required>
+<option value="">Course</option>
+<option>BSIT</option>
+<option>BSCS</option>
+<option>BSIS</option>
+<option>BSCE</option>
+</select>
+
+<input type="text" name="address" placeholder="Address" required>
+
+<input type="email" name="email" placeholder="Email" required>
+
+<input type="password" name="password" placeholder="Password" required>
+
+<button type="submit">Register</button>
+
+</form>
 
 </body>
 </html>
