@@ -82,6 +82,17 @@ app.post("/register", (req, res) => {
 
 });
 
+function createTableAnnouncements(){
+    db.run(`
+        CREATE TABLE IF NOT EXISTS Annoucements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )       
+    `)
+}
+
 /* Login route */
 app.post("/login", (req, res) => {
     const { idNumber, password } = req.body;
@@ -99,6 +110,23 @@ app.post("/login", (req, res) => {
         }
     });
 });
+
+app.get('/api/announcements', (req, res) => {
+    db.all('SELECT title, description, created_at FROM Annoucements ORDER BY created_at DESC', [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error' });
+        }
+        res.json(rows);
+    });
+});
+
+
+app.get('/main.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'main.html'));
+});
+
+
+createTableAnnouncements();
 
 /* Start server */
 app.listen(PORT, () => {

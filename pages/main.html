@@ -1,14 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="../style.css">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="/style.css" />
         <title>Home Page</title>
     </head>
-        <body>
-            <div class="nav">
-            <img src="../images/ucmainccslogo-removebg-preview.png" class="logo" alt="">
+    <body>
+        <div class="nav">
+            <img
+                src="../images/ucmainccslogo-removebg-preview.png"
+                class="logo"
+                alt=""
+            />
             <h1 class="CCS">CCS Sit-in Monitoring System</h1>
             <div class="links">
                 <a href="">Notification ⏷</a>
@@ -18,44 +22,93 @@
                 <a href="">Reservation</a>
             </div>
             <button type="">Log out</button>
-            </div>
+        </div>
         <main>
             <div class="main">
-                    <div class="Studentinfo">
-                        <h1>Student Information</h1>
+                <div class="Studentinfo">
+                    <h1>Student Information</h1>
 
-                        <div class="studentpic">
-                            <img src="/images/cat.png" alt="stud-pic">
-                        </div>
-                        <div class="info">
-                            <p id=""><span>👤Name:</span> Christian Luis V Gutierrez</p>
-                            <p id=""><span>🎓Course:</span> BSIT</p>
-                            <p id=""><span>📅Year:</span> 3rd year</p>
-                            <p id=""><span>📩Email:</span>  christianluisgutierrez@gmail.com</p>
-                            <p id=""><span>📍Address:</span> Camputhaw purok 3 Upper</p> 
-                            <p id=""><span>🕓Session:</span> 30</p>
-                        </div>
+                    <div class="studentpic">
+                        <img src="/images/cat.png" alt="stud-pic" />
                     </div>
-                
-                    <div class="announcement">
-                        <h1>Announcement</h1>
+                    <div class="info">
+                        <p id="">
+                            <span>👤Name:</span> Christian Luis V Gutierrez
+                        </p>
+                        <p id=""><span>🎓Course:</span> BSIT</p>
+                        <p id=""><span>📅Year:</span> 3rd year</p>
+                        <p id="">
+                            <span>📩Email:</span>
+                            christianluisgutierrez@gmail.com
+                        </p>
+                        <p id="">
+                            <span>📍Address:</span> Camputhaw purok 3 Upper
+                        </p>
+                        <p id=""><span>🕓Session:</span> 30</p>
                     </div>
-                    <div class="Rulesandreg">
-                        <h1>Rules and Regulation</h1>
-                        
-                        <div class="rules-content">
-                            <h3>University of Cebu</h3>
-                            <h4>COLLEGE OF INFORMATION & COMPUTER STUDIES</h4>
-                            <h4>LABORATORY RULES AND REGULATIONS</h4>
-                            <p>To avoid embarassment and maintain camaraderie with your friends and superior at our laboratories please observe the following:</p>
-                            <ol>
-                                <li>Maintain silence, proper decorum and discipline inside the laboratory. Mobile phones and other personal pieces of equipment must be switched off.</li>
-                                <li>Games are not allowed inside the lab. This includes computer-related games, card games and other games that may disturb the operation of the lab.</li>
-                                <li>Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of the software strictly prohibited.</li>
-                            </ol>
-                        </div>
+                </div>
+
+                <div class="announcements-holder">
+                    <h1>Announcement</h1>
+                    <div id="announcements" class="announcement-section"></div>
+                </div>
+
+                <div class="Rulesandreg">
+                    <h1>Rules and Regulation</h1>
+
+                    <div class="rules-content">
+                        <h3>University of Cebu</h3>
+                        <h4>COLLEGE OF INFORMATION & COMPUTER STUDIES</h4>
+                        <h4>LABORATORY RULES AND REGULATIONS</h4>
+                        <p>
+                            To avoid embarassment and maintain camaraderie with
+                            your friends and superior at our laboratories please
+                            observe the following:
+                        </p>
+                        <ol>
+                            <li>
+                                Maintain silence, proper decorum and discipline
+                                inside the laboratory. Mobile phones and other
+                                personal pieces of equipment must be switched
+                                off.
+                            </li>
+                            <li>
+                                Games are not allowed inside the lab. This
+                                includes computer-related games, card games and
+                                other games that may disturb the operation of
+                                the lab.
+                            </li>
+                            <li>
+                                Surfing the Internet is allowed only with the
+                                permission of the instructor. Downloading and
+                                installing of the software strictly prohibited.
+                            </li>
+                        </ol>
                     </div>
+                </div>
             </div>
         </main>
-        </body>
+
+        <script>
+            fetch("/api/announcements")
+                .then((res) => res.json())
+                .then((data) => {
+                    const container = document.getElementById("announcements");
+                    data.forEach((item) => {
+                        const div = document.createElement("div");
+                        div.className = "announcement";
+                        div.innerHTML = `
+                            <div class="title">${item.title} | ${new Date(item.created_at).toLocaleDateString()}</div>
+                            <p>${item.description}</p>
+                        `;
+                        container.appendChild(div);
+
+                        // Add line separator
+                        const sep = document.createElement("div");
+                        sep.className = "separator";
+                        container.appendChild(sep);
+                    });
+                });
+        </script>
+    </body>
 </html>
