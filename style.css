@@ -12,6 +12,15 @@
     align-items: center;
     border-radius: 0px 0px 30px 30px;
 }
+.nav button{
+    background: #B153D7;
+    height: 30px;
+    width: 100px;
+    border-radius: 50px;
+    margin-left: 20px;
+    border: none;
+}
+
 .nav .links a:hover{
     color: #d19bf0;
     margin-top: -4px;
@@ -285,4 +294,74 @@
     font-size: 15px;
     margin-left: 30px;
     margin-top: 20px;
+}
+
+/* main.html */
+
+.main{
+    display: flex;
+    justify-content: space-between;
+}
+
+.Studentinfo{
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.announcement{
+    height: 100vh;
+}
+.Rulesandreg{
+    height: 100vh;
+}
+
+.Studentinfo h1{
+    font-family: Tahoma;
+    font-size: 25px;
+    background: #4D2FB2;
+    height: 50px;
+    width: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+}
+.Studentinfo p{
+    font-family: Tahoma;
+    font-size: 15px;
+}
+
+.announcement h1{
+    font-family: Tahoma;
+    font-size: 25px;
+    background: #4D2FB2;
+    height: 50px;
+    width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.Rulesandreg h1{
+    font-family: Tahoma;
+    font-size: 25px;
+    background: #4D2FB2;
+    height: 50px;
+    width: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+}
+
+.studentpic{
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+    height: 200px;
+    width: 200px;
+    border-radius: 100%;
+    overflow: hidden;
 }
