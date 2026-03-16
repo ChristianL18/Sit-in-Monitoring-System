@@ -21,7 +21,7 @@
                 <a href="">History</a>
                 <a href="">Reservation</a>
             </div>
-            <button type="">Log out</button>
+            <button type="" onclick="logout()">Log out</button>
         </div>
         <main>
             <div class="main">
@@ -32,17 +32,18 @@
                         <img src="/images/cat.png" alt="stud-pic" />
                     </div>
                     <div class="info">
-                        <p id="">
-                            <span>👤Name:</span> Christian Luis V Gutierrez
+                        <p id="studentName">
+                            <span>👤Name:</span> <span id="nameValue">Loading...</span>
                         </p>
-                        <p id=""><span>🎓Course:</span> BSIT</p>
-                        <p id=""><span>📅Year:</span> 3rd year</p>
+                        <p id="studentCourse"><span>🎓Course:</span> <span id="courseValue">Loading...</span></p>
+                        <p id="studentYear"><span>📅Year:</span> <span id="yearValue">Loading...</span></p>
                         <p id="">
                             <span>📩Email:</span>
-                            christianluisgutierrez@gmail.com
+                            <span id="emailValue">Loading...</span>
                         </p>
                         <p id="">
-                            <span>📍Address:</span> Camputhaw purok 3 Upper
+                            <span>📍Address:</span>
+                            <span id="addressValue">Loading...</span>
                         </p>
                         <p id=""><span>🕓Session:</span> 30</p>
                     </div>
@@ -90,6 +91,23 @@
         </main>
 
         <script>
+            // Fetch student info
+            fetch("/api/studentinfo")
+                .then((res) => {
+                    if (!res.ok) throw new Error("Not authenticated");
+                    return res.json();
+                })
+                .then((data) => {
+                    document.getElementById("nameValue").textContent = data.name || "N/A";
+                    document.getElementById("courseValue").textContent = data.course || "N/A";
+                    document.getElementById("yearValue").textContent = data.course_level || "N/A";
+                    document.getElementById("emailValue").textContent = data.email || "N/A";
+                    document.getElementById("addressValue").textContent = data.address || "N/A";
+                })
+                .catch((err) => {
+                    console.error("Error fetching student info:", err);
+                });
+
             fetch("/api/announcements")
                 .then((res) => res.json())
                 .then((data) => {
@@ -109,6 +127,14 @@
                         container.appendChild(sep);
                     });
                 });
+
+                 function logout() {
+                    fetch('/logout', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+        }
+
+
         </script>
     </body>
 </html>

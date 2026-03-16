@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "sqlite3": "^5.1.7"
   },
   "name": "sit-in-monitoring-system-1",
