@@ -2,6 +2,7 @@ const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const session = require("express-session");
+const bcrypt = require("bcrypt");
 
 const app = express();
 const PORT = 3000;
@@ -45,6 +46,58 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT
 )
 `);
+
+/* Create admin table if it doesn't exist */
+db.run(`
+CREATE TABLE IF NOT EXISTS admins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+`);
+
+/* Admin Registration Route */
+app.post("/api/admin-register", async (req, res) => {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+        return res.json({ success: false, error: "All fields are required" });
+    }
+
+    try {
+        // Hash the password with bcrypt
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Check if username or email already exists
+        const checkSql = `SELECT * FROM admins WHERE username = ? OR email = ?`;
+        db.get(checkSql, [username, email], async (err, existingAdmin) => {
+            if (err) {
+                console.log(err);
+                return res.json({ success: false, error: "Database error" });
+            }
+
+            if (existingAdmin) {
+                return res.json({ success: false, error: "Username or email already exists" });
+            }
+
+            // Insert new admin with hashed password
+            const insertSql = `INSERT INTO admins (username, email, password) VALUES (?, ?, ?)`;
+            db.run(insertSql, [username, email, hashedPassword], function(err) {
+                if (err) {
+                    console.log(err);
+                    return res.json({ success: false, error: "Registration failed" });
+                }
+                res.json({ success: true, message: "Admin registered successfully!" });
+            });
+        });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, error: "Server error" });
+    }
+});
 
 /* Register route */
 app.post("/register", (req, res) => {
@@ -117,26 +170,47 @@ app.post('/api/announcements', (req, res) => {
 
 
 /* Login route */
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
     const { idNumber, password } = req.body;
     
-    const sql = `SELECT * FROM users WHERE id_number = ? AND password = ?`;
+    // First, check if the user is an admin in the admins table
+    const adminSql = `SELECT * FROM admins WHERE username = ?`;
     
-    db.get(sql, [idNumber, password], (err, user) => {
+    db.get(adminSql, [idNumber], async (err, admin) => {
         if (err) {
             console.log(err);
-            res.json({ success: false, error: "Database error" });
-        } else if (user) {
-            req.session.userId = user.id;
-            // Check if user is admin (using id_number 'admin' for admin access)
-            if (user.id_number === 'admin') {
-                res.json({ success: true, redirectUrl: '/pages/admin.html' });
-            } else {
-                res.json({ success: true, redirectUrl: '/pages/main.html' });
-            }
-        } else {
-            res.json({ success: false, error: "Invalid ID Number or Password" });
+            return res.json({ success: false, error: "Database error" });
         }
+        
+        if (admin) {
+            // Verify password with bcrypt
+            const passwordMatch = await bcrypt.compare(password, admin.password);
+            if (passwordMatch) {
+                req.session.userId = admin.id;
+                req.session.isAdmin = true;
+                return res.json({ success: true, redirectUrl: '/pages/admin.html' });
+            }
+        }
+        
+        // If not admin, check the users table
+        const userSql = `SELECT * FROM users WHERE id_number = ? AND password = ?`;
+        
+        db.get(userSql, [idNumber, password], (err, user) => {
+            if (err) {
+                console.log(err);
+                res.json({ success: false, error: "Database error" });
+            } else if (user) {
+                req.session.userId = user.id;
+                // Check if user is admin (using id_number 'admin' for admin access)
+                if (user.id_number === 'admin') {
+                    res.json({ success: true, redirectUrl: '/pages/admin.html' });
+                } else {
+                    res.json({ success: true, redirectUrl: '/pages/main.html' });
+                }
+            } else {
+                res.json({ success: false, error: "Invalid ID Number or Password" });
+            }
+        });
     });
 });
 
@@ -293,6 +367,10 @@ app.get('/pages/main.html', (req, res) => {
 
 app.get('/pages/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'pages/admin.html'));
+});
+
+app.get('/pages/admin-register.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/admin-register.html'));
 });
 
 app.get('/admin.html', (req, res) => {
