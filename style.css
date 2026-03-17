@@ -318,9 +318,10 @@
 }
 .announcements-holder{
     height: 100vh;
+    width: 40%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     border: 2px solid #4D2FB2;
     border-radius: 15px;
     padding: 20px;
@@ -363,6 +364,7 @@
     justify-content: center;
     align-items: center;
     border-radius: 10px;
+    margin-left: 80px;
 }
 
 .rules-content {
@@ -461,9 +463,6 @@
     font-weight: bold;
 }
 
-
-
-
 .announcements-holder h1{
     font-family: Tahoma;
     font-size: 25px;
@@ -474,6 +473,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
+    margin-left: 120px;
 }
 
 .announcement-section{
@@ -481,6 +481,8 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
+    padding: 20px;
+    gap: 15px;
 }
 .announcement{
     min-height: 128px;
@@ -488,16 +490,607 @@
     display: flex;
     flex-direction: column;
     gap: 40px; 
-justify-content: start;
-padding: 20px;
+    justify-content: start;
+    padding: 20px;
+    background: white;
+    border-left: 4px solid #4D2FB2;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 500px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Student Section Styles */
+.student-section {
+    padding: 30px;
+    margin-top: 20px;
+}
+
+.student-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.student-header h2 {
+    font-family: Tahoma, sans-serif;
+    font-size: 28px;
+    color: #4D2FB2;
+    margin: 0;
+}
+
+.student-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 2px solid #4D2FB2;
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+.search-box input {
+    padding: 10px 15px;
+    border: none;
+    outline: none;
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+    width: 200px;
+    border-radius: 25px 0 0 25px;
+}
+
+.search-box .btn-search {
+    padding: 10px 15px;
+    background: #4D2FB2;
+    border: none;
+    cursor: pointer;
+    border-radius: 0 25px 25px 0;
+    font-size: 16px;
+    transition: background 0.3s ease;
+}
+
+.search-box .btn-search:hover {
+    background: #6B4FD6;
+}
+
+.student-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-add-student {
+    padding: 12px 25px;
+    background: #4D2FB2;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-family: Tahoma, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-student:hover {
+    background: #6B4FD6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(77, 47, 178, 0.3);
+}
+
+.btn-reset-all {
+    padding: 12px 25px;
+    background: #B153D7;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-family: Tahoma, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-reset-all:hover {
+    background: #c77de8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(177, 83, 215, 0.3);
+}
+
+.student-table-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Tahoma, sans-serif;
+}
+
+.student-table thead {
+    background: #4D2FB2;
+    color: white;
+}
+
+.student-table th {
+    padding: 18px 15px;
+    text-align: left;
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.student-table td {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 14px;
+    color: #333;
+}
+
+.student-table tbody tr:hover {
+    background: #f5f3ff;
+}
+
+.student-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.student-table .actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-edit {
+    padding: 8px 16px;
+    background: #4D2FB2;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-family: Tahoma, sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+    background: #6B4FD6;
+}
+
+.btn-delete {
+    padding: 8px 16px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-family: Tahoma, sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+}
+
+/* Sit-in Records Section Styles */
+.sit-in-records-section {
+    padding: 30px;
+    margin-top: 20px;
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.records-header h2 {
+    font-family: Tahoma, sans-serif;
+    font-size: 28px;
+    color: #4D2FB2;
+    margin: 0;
+}
+
+.records-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.entries-per-page {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+}
+
+.entries-per-page select {
+    padding: 8px 12px;
+    border: 2px solid #4D2FB2;
+    border-radius: 20px;
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.records-table-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.records-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Tahoma, sans-serif;
+}
+
+.records-table thead {
+    background: #4D2FB2;
+    color: white;
+}
+
+.records-table th {
+    padding: 15px 10px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.records-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 13px;
+    color: #333;
+}
+
+.records-table tbody tr:hover {
+    background: #f5f3ff;
+}
+
+.records-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.status-active {
+    color: #27ae60;
+    font-weight: bold;
+    background: #d5f4e6;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+}
+
+.status-completed {
+    color: #7f8c8d;
+    font-weight: bold;
+    background: #ecf0f1;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+}
+
+.page-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.page-buttons button {
+    padding: 8px 12px;
+    border: 1px solid #4D2FB2;
+    background: white;
+    color: #4D2FB2;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: Tahoma, sans-serif;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.page-buttons button:hover {
+    background: #4D2FB2;
+    color: white;
+}
+
+.page-buttons button.active {
+    background: #4D2FB2;
+    color: white;
 }
 .title{
+    font-size: 18px;
     font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+.announcement .date {
+    font-size: 12px;
+    color: #888;
+    font-weight: normal;
+}
+
+.announcement p {
+    color: #555;
+    line-height: 1.5;
+    margin: 0;
 }
 
 .separator{
     height: 1px;
     width: 100%;
     background-color: gray;
-    margin-top: 32px;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+/* Modal Box */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 1001;
+}
+
+.modal.show, .modal-overlay.show {
+    display: block;
+}
+
+.modal-buttons {
+    margin-top: 20px;
+}
+
+.modal-buttons button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+/* Sit-in Modal Form */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #4D2FB2;
+}
+
+.form-group input[readonly] {
+    background-color: #f5f5f5;
+    color: #666;
+}
+
+/* Sit-in Modal specific width */
+#sitInModal {
+    width: 500px;
+    max-width: 90%;
+}
+
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.chart-container h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* Admin */
+
+.main1{
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 50px;
+}
+.statistic{
+    height: auto;
+    min-height: 300px;
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid #4D2FB2;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.chart-wrapper {
+    width: 100%;
+    padding: 10px;
+    max-width: 300px;
+}
+.statistic h1{
+    font-family: Tahoma;
+    font-size: 25px;
+    background: #4D2FB2;
+    height: 50px;
+    width: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+}
+.stats-container {
+    display: flex;
+    margin-top: 10px;
+    gap: 20px;
+    padding: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #4D2FB2, #6B4FD6);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 300px;
+}
+
+.stat-box h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.stat-box p {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.language-stats {
+    height: auto;
+    min-height: 350px;
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid #4D2FB2;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.language-stats h1 {
+    font-family: Tahoma;
+    font-size: 20px;
+    background: #4D2FB2;
+    height: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    color: white;
+    margin-bottom: 15px;
+}
+
+
+.adannounce{
+    padding: 5px;
+    margin-top: 30px;
+    max-height: 500px;
+    max-width: 100%;
+    min-width: 100%;
+}
+
+.announcements-holder button {
+    height: 50px;
+    width: 200px;
+    margin-top: 30px;
+    border-radius: 15px;
+    background: #B153D7;
+}
+.adtitle{
+    padding: 5px;
+    margin-top: 30px;
+    max-height: 500px;
+    max-width: 100%;
+    min-width: 100%;
+}
+
+
+.user-result {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.user-result p {
+    font-family: Tahoma;
+    font-weight: bold;
+    margin: 5px 0;
+    gap: 5px;
+}
+
+#searchModal input {
+    height: 75px;
+    width: 500px;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
 }

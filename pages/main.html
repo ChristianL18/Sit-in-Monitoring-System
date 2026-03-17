@@ -21,7 +21,7 @@
                 <a href="">History</a>
                 <a href="">Reservation</a>
             </div>
-            <button type="" onclick="logout()">Log out</button>
+            <button type="" onclick="showLogoutModal()">Log out</button>
         </div>
         <main>
             <div class="main">
@@ -128,13 +128,41 @@
                     });
                 });
 
-                 function logout() {
-                    fetch('/logout', { method: 'POST' })
-                    .then(r => r.json())
-                    .then(d => { if (d.success) window.location.href = d.redirectUrl; });
-        }
+                        function showLogoutModal() {
+                document.getElementById("logoutOverlay").classList.add("show");
+                document.getElementById("logoutModal").classList.add("show");
+            }
+
+            function closeLogoutModal() {
+                document.getElementById("logoutOverlay").classList.remove("show");
+                document.getElementById("logoutModal").classList.remove("show");
+            }
+
+            function logout() {
+                fetch('/logout', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+            }
+
+            function confirmLogout() {
+                closeLogoutModal();
+                logout();
+            }
+
 
 
         </script>
+
+        <!-- Logout Confirmation Modal -->
+        <div class="modal-overlay" id="logoutOverlay"></div>
+        <div class="modal" id="logoutModal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div class="modal-buttons">
+                <button onclick="confirmLogout()">Yes, Log Out</button>
+                <button onclick="closeLogoutModal()">Cancel</button>
+            </div>
+        </div>
+
     </body>
 </html>

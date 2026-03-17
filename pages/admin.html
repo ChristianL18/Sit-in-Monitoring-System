@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Admin</title>
 </head>
 <body>
@@ -11,22 +12,301 @@
             <img src="../images/ucmainccslogo-removebg-preview.png" class="logo" alt="">
             <h1 class="CCS">CCS Sit-in Monitoring System</h1>
             <div class="links">
-                <a href="">Home</a>
-                <a href="">Search</a>
-                <a href="">Sit-in</a>
-                <a href="">View Sit-in Record</a>
+                <a href="admin.html">Home</a>
+                <a href="#" onclick="showSearchModal()">Search</a>
+                <a href="Student.html">Student</a>
+                <a href="#" onclick="showSitInModal()">Sit-in</a>
+                <a href="ViewRecord.html">View Sit-in Record</a>
                 <a href="">Feedbacks Requests</a>
                 <a href="">Reservation</a>
+            </div>
+            <button type="" onclick="showLogoutModal()">Log out</button>
+            </div>
 
+
+            <div class="main1">
+                        <div class="statistic">
+                <h1>Statistics</h1>
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <h3>Total Students</h3>
+                        <p id="totalStudents">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Currently Sit-in</h3>
+                        <p id="currentSitIn">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Total Sit-in</h3>
+                        <p id="totalSitIn">0</p>
+                    </div>
+                </div>
+                <div class="language-stats">
+                <div class="chart-wrapper">
+                    <canvas id="languageChart"></canvas>
+                </div>
             </div>
-            <button type="" onclick="logout()">Log out</button>
             </div>
+
+
+
+            <div class="announcements-holder">
+                    <h1>Announcement</h1>
+                    <input class="adtitle" placeholder="Title" id="announcetitle">
+                    <textarea class="adannounce" placeholder="Announcement" id="announcementBio"></textarea>
+                    <button type="" onclick="addAnnouncement()">Add Announcement</button>
+                    <div id="announcements" class="announcement-section"></div>
+                </div>
+            </div>
+
+       <!-- Logout Confirmation Modal -->
+        <div class="modal-overlay" id="logoutOverlay"></div>
+        <div class="modal" id="logoutModal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div class="modal-buttons">
+                <button onclick="confirmLogout()">Yes, Log Out</button>
+                <button onclick="closeLogoutModal()">Cancel</button>
+            </div>
+    
+        </div>
+
+                <!-- Search Modal -->
+        <div class="modal-overlay" id="searchOverlay"></div>
+        <div class="modal" id="searchModal">
+            <h3>Search User</h3>
+            <input type="text" id="searchId" placeholder="Enter ID Number">
+            <div class="modal-buttons">
+                <button onclick="searchUser()">Search</button>
+                <button onclick="closeSearchModal()">Cancel</button>
+            </div>
+            <div id="searchResult"></div>
+        </div>
+
+        <!-- Sit-in Modal -->
+        <div class="modal-overlay" id="sitInOverlay"></div>
+        <div class="modal" id="sitInModal">
+            <h3>Sit-in Form</h3>
+            <div class="form-group">
+                <label>ID Number</label>
+                <input type="text" id="sitInId" placeholder="Enter ID Number">
+            </div>
+            <div class="form-group">
+                <label>Student Name</label>
+                <input type="text" id="sitInName" placeholder="Student Name" readonly>
+            </div>
+            <div class="form-group">
+                <label>Purpose</label>
+                <input type="text" id="sitInPurpose" placeholder="Enter Purpose">
+            </div>
+            <div class="form-group">
+                <label>Lab</label>
+                <input type="text" id="sitInLab" placeholder="Lab Number">
+                
+            </div>
+            <div class="form-group">
+                <label>Remaining Session</label>
+                <input type="text" id="sitInSession" placeholder="30" readonly>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="submitSitIn()">Submit</button>
+                <button onclick="closeSitInModal()">Cancel</button>
+            </div>
+        </div>
 </body>
     <script>
-                function logout() {
-                    fetch('/logout', { method: 'POST' })
-                    .then(r => r.json())
-                    .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+
+            function addAnnouncement() {
+            const title = document.getElementById("announcetitle").value;
+            const description = document.getElementById("announcementBio").value;
+            
+            if (!title || !description) {
+                alert("Please fill in both fields");
+                return;
+            }
+            
+            fetch('/api/announcements', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Announcement posted!");
+                    document.getElementById("announcetitle").value = "";
+                    document.getElementById("announcementBio").value = "";
+                    location.reload();
+                }
+            });
         }
-    </script>
+            fetch("/api/announcements")
+                .then((res) => res.json())
+                .then((data) => {
+                    const container = document.getElementById("announcements");
+                    data.forEach((item) => {
+                        const div = document.createElement("div");
+                        div.className = "announcement";
+                        div.innerHTML = `
+                            <div class="title">${item.title} | ${new Date(item.created_at).toLocaleDateString()}</div>
+                            <p>${item.description}</p>
+                        `;
+                        container.appendChild(div);
+
+                        // Add line separator
+                        const sep = document.createElement("div");
+                        sep.className = "separator";
+                        container.appendChild(sep);
+                    });
+                });
+
+                // Fetch statistics
+                fetch("/api/stats")
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById("totalStudents").textContent = data.totalStudents;
+                        document.getElementById("currentSitIn").textContent = data.currentSitIn;
+                        document.getElementById("totalSitIn").textContent = data.totalSitIn;
+                    });
+
+                // Language Chart
+                const ctx = document.getElementById('languageChart').getContext('2d');
+                const languageChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['C#', 'C', 'Java', 'ASP.NET', 'PHP'],
+                        datasets: [{
+                            label: 'Students per Language',
+                            data: [0, 0, 0, 0, 0],
+                            backgroundColor: ['#4D2FB2', '#6B4FD6', '#8B6FFF', '#A08EFF', '#C4B5FF'],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+
+                fetch('/api/language-stats')
+                    .then(res => res.json())
+                    .then(data => {
+                        languageChart.data.datasets[0].data = data.data;
+                        languageChart.update();
+                    });
+
+                function showSearchModal() {
+                document.getElementById("searchOverlay").classList.add("show");
+                document.getElementById("searchModal").classList.add("show");
+            }
+
+            function closeSearchModal() {
+                document.getElementById("searchOverlay").classList.remove("show");
+                document.getElementById("searchModal").classList.remove("show");
+                document.getElementById("searchResult").innerHTML = "";
+                document.getElementById("searchId").value = "";
+            }
+
+        function searchUser() {
+            const id = document.getElementById("searchId").value;
+            
+            fetch(`/api/search-user?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const resultDiv = document.getElementById("searchResult");
+                    if (data.success) {
+                        const user = data.user;
+                        resultDiv.innerHTML = `
+                            <div class="user-result">
+                                <p><strong>ID:</strong> ${user.id_number}</p>
+                                <p><strong>Name:</strong> ${user.first_name} ${user.last_name}</p>
+                                <p><strong>Course:</strong> ${user.course}</p>
+                                <p><strong>Year:</strong> ${user.course_level}</p>
+                                <p><strong>Email:</strong> ${user.email}</p>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `<p style="color:red;">User not found</p>`;
+                    }
+                });
+        }
+
+            function showLogoutModal() {
+                document.getElementById("logoutOverlay").classList.add("show");
+                document.getElementById("logoutModal").classList.add("show");
+            }
+
+            function closeLogoutModal() {
+                document.getElementById("logoutOverlay").classList.remove("show");
+                document.getElementById("logoutModal").classList.remove("show");
+            }
+
+            function logout() {
+                fetch('/logout', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+            }
+
+            function confirmLogout() {
+                closeLogoutModal();
+                logout();
+            }
+
+            // Sit-in Modal Functions
+            function showSitInModal() {
+                document.getElementById("sitInOverlay").classList.add("show");
+                document.getElementById("sitInModal").classList.add("show");
+            }
+
+            function closeSitInModal() {
+                document.getElementById("sitInOverlay").classList.remove("show");
+                document.getElementById("sitInModal").classList.remove("show");
+                document.getElementById("sitInId").value = "";
+                document.getElementById("sitInName").value = "";
+                document.getElementById("sitInPurpose").value = "";
+                document.getElementById("sitInLab").value = "";
+            }
+
+            function submitSitIn() {
+                const studentId = document.getElementById("sitInId").value;
+                const studentName = document.getElementById("sitInName").value;
+                const purpose = document.getElementById("sitInPurpose").value;
+                const lab = document.getElementById("sitInLab").value;
+                
+                if (!studentId || !purpose || !lab) {
+                    alert("Please fill in all required fields");
+                    return;
+                }
+                
+                fetch('/api/sitin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentId, studentName, purpose, lab })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Sit-in recorded successfully!");
+                        closeSitInModal();
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                });
+            }
+
+            // Auto-fill student name when ID is entered
+            document.getElementById("sitInId").addEventListener("blur", function() {
+                const id = this.value;
+                if (id) {
+                    fetch(`/api/search-user?id=${id}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                document.getElementById("sitInName").value = data.user.first_name + " " + data.user.last_name;
+                                document.getElementById("sitInSession").value = "30";
+                            }
+                        });
+                }
+            });
+</script>
 </html>

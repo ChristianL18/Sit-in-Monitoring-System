@@ -25,8 +25,8 @@
 <div class="register-main">
     <div class="register-container">
         <!-- ADDED: class="register-form" -->
-        <form action="http://localhost:3000/register" method="POST" class="register-form">
-            
+        <form id="registerForm" class="register-form">
+
             <!-- ADDED: Title that matches your CSS -->
             <h2 class="register-title">Registration</h2>
 
@@ -51,16 +51,16 @@
             <select name="course" required>
                 <option value="">Course</option>
                 
-                <option value="BSIT">College of Allied Engineering</option>
-                <option value="BSCS">College of Arts and Sciences</option>
-                <option value="BSIS">College of Business and Accountancy</option>
-                <option value="BSCE">College of Computer Studies</option>
-                <option value="BSIT">College of Criminal Justice</option>
-                <option value="BSCS">College of Customs Administration</option>
-                <option value="BSIS">College of Hospitality Management</option>
-                <option value="BSCE">College of Nursing</option>
-                <option value="BSIT">College of Social Work</option>
-                <option value="BSCS">College of Teacher Education</option>
+                <option value="BSIT">Bachelor of Science Information technology(BSIT)</option>
+                <option value="BSCS">Bachelor of Science Computer Science(BSCS)</option>
+                <option value="BSIS">Bachelor of Science Information System(BSIS)</option>
+                <option value="BSCE">Bachelor of Science Civil Engineering(BSCE)</option>
+                <option value="BSCRIM">Bachelor of Science in Criminology(BSCRIM)</option>
+                <option value="BSCA">Bachelor of Science Customs Administration(BSCA)</option>
+                <option value="BSHM">Bachelor of Science Hospitality Management(BSHM)</option>
+                <option value="BSN">Bachelor of Science in Nursing(BSN)</option>
+                <option value="BSPSYCH">Bachelor of Science Abnornal Psychology(BSPSCYH)</option>
+                <option value="BEED">Bachelor of Science of Education(BEED)</option>
                 
             </select>
 
@@ -76,6 +76,27 @@
         </form>
     </div>
 </div>
-
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            const response = await fetch("http://localhost:3000/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.text();
+            
+            if (result.includes("Successful")) {
+                window.location.href = "/pages/Login.html";
+            } else {
+                alert("Registration failed. Please try again.");
+            }
+        });
+    </script>
 </body>
 </html>

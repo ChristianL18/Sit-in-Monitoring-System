@@ -101,7 +101,19 @@ function createTableAnnouncements(){
     `)
 }
 
-
+// Create/Add announcement
+app.post('/api/announcements', (req, res) => {
+    const { title, description } = req.body;
+    
+    const sql = `INSERT INTO Annoucements (title, description) VALUES (?, ?)`;
+    
+    db.run(sql, [title, description], function(err) {
+        if (err) {
+            return res.status(500).json({ error: "Failed to create announcement" });
+        }
+        res.json({ success: true });
+    });
+});
 
 
 /* Login route */
@@ -116,7 +128,12 @@ app.post("/login", (req, res) => {
             res.json({ success: false, error: "Database error" });
         } else if (user) {
             req.session.userId = user.id;
-            res.json({ success: true, redirectUrl: "/pages/main.html" });
+            // Check if user is admin (using id_number 'admin' for admin access)
+            if (user.id_number === 'admin') {
+                res.json({ success: true, redirectUrl: '/pages/admin.html' });
+            } else {
+                res.json({ success: true, redirectUrl: '/pages/main.html' });
+            }
         } else {
             res.json({ success: false, error: "Invalid ID Number or Password" });
         }
@@ -142,6 +159,33 @@ app.get('/api/studentinfo', (req, res) => {
     });
 });
 
+// Search user by ID
+app.get('/api/search-user', (req, res) => {
+    const idNumber = req.query.id;
+    
+    db.get("SELECT * FROM users WHERE id_number = ?", [idNumber], (err, user) => {
+        if (err) {
+            return res.status(500).json({ error: "Database error" });
+        }
+        if (user) {
+            res.json({ success: true, user: user });
+        } else {
+            res.json({ success: false, error: "User not found" });
+        }
+    });
+});
+
+// Get all users (for student management)
+app.get('/api/users', (req, res) => {
+    db.all("SELECT id, id_number, first_name, last_name, course_level, course, email FROM users ORDER BY last_name", [], (err, users) => {
+        if (err) {
+            return res.status(500).json({ error: "Database error" });
+        }
+        res.json(users);
+    });
+});
+
+
 // Logout route
 app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -162,9 +206,101 @@ app.get('/api/announcements', (req, res) => {
     });
 });
 
+// Create sit-in table
+function createTableSitIn(){
+    db.run(`
+        CREATE TABLE IF NOT EXISTS sitin (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT,
+            student_name TEXT,
+            purpose TEXT,
+            lab TEXT,
+            time_in DATETIME DEFAULT CURRENT_TIMESTAMP,
+            time_out DATETIME,
+            status TEXT DEFAULT 'active'
+        )
+    `)
+}
+
+// Get all sit-in records
+app.get('/api/sitin', (req, res) => {
+    db.all("SELECT * FROM sitin ORDER BY time_in DESC", [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error fetching records' });
+        }
+        res.json(rows);
+    });
+});
+
+// Create sit-in
+app.post('/api/sitin', (req, res) => {
+    const { studentId, studentName, purpose, lab } = req.body;
+    
+    const sql = `INSERT INTO sitin (student_id, student_name, purpose, lab, status) VALUES (?, ?, ?, ?, 'active')`;
+    
+    db.run(sql, [studentId, studentName, purpose, lab], function(err) {
+        if (err) {
+            return res.status(500).json({ error: "Failed to create sit-in" });
+        }
+        res.json({ success: true });
+    });
+});
+
+// Get statistics
+app.get('/api/stats', (req, res) => {
+    const stats = {};
+    
+    db.get("SELECT COUNT(*) as count FROM users", [], (err, row) => {
+        stats.totalStudents = row ? row.count : 0;
+        
+        db.get("SELECT COUNT(*) as count FROM sitin WHERE status = 'active'", [], (err, row) => {
+            stats.currentSitIn = row ? row.count : 0;
+            
+            db.get("SELECT COUNT(*) as count FROM sitin", [], (err, row) => {
+                stats.totalSitIn = row ? row.count : 0;
+                res.json(stats);
+            });
+        });
+    });
+});
+
+// Get language statistics
+app.get('/api/language-stats', (req, res) => {
+    const languages = { 'C#': 0, 'C': 0, 'Java': 0, 'ASP.NET': 0, 'PHP': 0 };
+    
+    db.all("SELECT lab, COUNT(*) as count FROM sitin GROUP BY lab", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Error' });
+        
+        rows.forEach(row => {
+            if (languages.hasOwnProperty(row.lab)) {
+                languages[row.lab] = row.count;
+            }
+        });
+        
+        res.json({ 
+            labels: Object.keys(languages), 
+            data: Object.values(languages) 
+        });
+    });
+});
+
+createTableSitIn();
+
+
+app.get('/pages/main.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/main.html'));
+});
+
+app.get('/pages/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/admin.html'));
+});
+
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/admin.html'));
+});
 
 app.get('/main.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'main.html'));
+    res.sendFile(path.join(__dirname, 'pages/main.html'));
 });
 
 

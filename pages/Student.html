@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <title>Student Management</title>
+</head>
+<body>
+    <div class="nav">
+            <img src="../images/ucmainccslogo-removebg-preview.png" class="logo" alt="">
+            <h1 class="CCS">CCS Sit-in Monitoring System</h1>
+            <div class="links">
+                <a href="admin.html">Home</a>
+                <a href="#" onclick="showSearchModal()">Search</a>
+                <a href="Student.html">Student</a>
+                <a href="#" onclick="showSitInModal()">Sit-in</a>
+                <a href="ViewRecord.html">View Sit-in Record</a>
+                <a href="">Feedbacks Requests</a>
+                <a href="">Reservation</a>
+            </div>
+            <button type="" onclick="showLogoutModal()">Log out</button>
+            </div>
+
+
+            <div class="student-section" id="studentSection">
+            <div class="student-header">
+                <h2>Student Information</h2>
+                <div class="student-controls">
+                    <div class="search-box">
+                        <input type="text" id="studentSearch" placeholder="Search students..." onkeyup="searchStudents()">
+                        <button class="btn-search">🔍</button>
+                    </div>
+                    <div class="student-buttons">
+                        <button class="btn-add-student" onclick="showAddStudentModal()">Add Student</button>
+                        <button class="btn-reset-all" onclick="resetAllStudents()">Reset All</button>
+                    </div>
+                </div>
+            </div>
+            <div class="student-table-container">
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>ID Number</th>
+                            <th>Name</th>
+                            <th>Year Level</th>
+                            <th>Course</th>
+                            <th>Remaining Session</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <!-- Student data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Logout Confirmation Modal -->
+        <div class="modal-overlay" id="logoutOverlay"></div>
+        <div class="modal" id="logoutModal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div class="modal-buttons">
+                <button onclick="confirmLogout()">Yes, Log Out</button>
+                <button onclick="closeLogoutModal()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Search Modal -->
+        <div class="modal-overlay" id="searchOverlay"></div>
+        <div class="modal" id="searchModal">
+            <h3>Search User</h3>
+            <input type="text" id="searchId" placeholder="Enter ID Number">
+            <div class="modal-buttons">
+                <button onclick="searchUser()">Search</button>
+                <button onclick="closeSearchModal()">Cancel</button>
+            </div>
+            <div id="searchResult"></div>
+        </div>
+
+        <!-- Sit-in Modal -->
+        <div class="modal-overlay" id="sitInOverlay"></div>
+        <div class="modal" id="sitInModal">
+            <h3>Sit-in Form</h3>
+            <div class="form-group">
+                <label>ID Number</label>
+                <input type="text" id="sitInId" placeholder="Enter ID Number">
+            </div>
+            <div class="form-group">
+                <label>Student Name</label>
+                <input type="text" id="sitInName" placeholder="Student Name" readonly>
+            </div>
+            <div class="form-group">
+                <label>Purpose</label>
+                <input type="text" id="sitInPurpose" placeholder="Enter Purpose">
+            </div>
+            <div class="form-group">
+                <label>Lab</label>
+                <input type="text" id="sitInLab" placeholder="Lab Number">
+            </div>
+            <div class="form-group">
+                <label>Remaining Session</label>
+                <input type="text" id="sitInSession" placeholder="30" readonly>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="submitSitIn()">Submit</button>
+                <button onclick="closeSitInModal()">Cancel</button>
+            </div>
+        </div>
+</body>
+<script>
+    // Search Modal Functions
+    function showSearchModal() {
+        document.getElementById("searchOverlay").classList.add("show");
+        document.getElementById("searchModal").classList.add("show");
+    }
+
+    function closeSearchModal() {
+        document.getElementById("searchOverlay").classList.remove("show");
+        document.getElementById("searchModal").classList.remove("show");
+        document.getElementById("searchResult").innerHTML = "";
+        document.getElementById("searchId").value = "";
+    }
+
+    function searchUser() {
+        const id = document.getElementById("searchId").value;
+        
+        fetch(`/api/search-user?id=${id}`)
+            .then(res => res.json())
+            .then(data => {
+                const resultDiv = document.getElementById("searchResult");
+                if (data.success) {
+                    const user = data.user;
+                    resultDiv.innerHTML = `
+                        <div class="user-result">
+                            <p><strong>ID:</strong> ${user.id_number}</p>
+                            <p><strong>Name:</strong> ${user.first_name} ${user.last_name}</p>
+                            <p><strong>Course:</strong> ${user.course}</p>
+                            <p><strong>Year:</strong> ${user.course_level}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p style="color:red;">User not found</p>`;
+                }
+            });
+    }
+
+    // Logout Modal Functions
+    function showLogoutModal() {
+        document.getElementById("logoutOverlay").classList.add("show");
+        document.getElementById("logoutModal").classList.add("show");
+    }
+
+    function closeLogoutModal() {
+        document.getElementById("logoutOverlay").classList.remove("show");
+        document.getElementById("logoutModal").classList.remove("show");
+    }
+
+    function logout() {
+        fetch('/logout', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+    }
+
+    function confirmLogout() {
+        closeLogoutModal();
+        logout();
+    }
+
+    // Sit-in Modal Functions
+    function showSitInModal() {
+        document.getElementById("sitInOverlay").classList.add("show");
+        document.getElementById("sitInModal").classList.add("show");
+    }
+
+    function closeSitInModal() {
+        document.getElementById("sitInOverlay").classList.remove("show");
+        document.getElementById("sitInModal").classList.remove("show");
+        document.getElementById("sitInId").value = "";
+        document.getElementById("sitInName").value = "";
+        document.getElementById("sitInPurpose").value = "";
+        document.getElementById("sitInLab").value = "";
+    }
+
+    function submitSitIn() {
+        const studentId = document.getElementById("sitInId").value;
+        const studentName = document.getElementById("sitInName").value;
+        const purpose = document.getElementById("sitInPurpose").value;
+        const lab = document.getElementById("sitInLab").value;
+        
+        if (!studentId || !purpose || !lab) {
+            alert("Please fill in all required fields");
+            return;
+        }
+        
+        fetch('/api/sitin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentId, studentName, purpose, lab })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Sit-in recorded successfully!");
+                closeSitInModal();
+            } else {
+                alert("Error: " + data.error);
+            }
+        });
+    }
+
+    // Auto-fill student name when ID is entered
+    document.getElementById("sitInId").addEventListener("blur", function() {
+        const id = this.value;
+        if (id) {
+            fetch(`/api/search-user?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("sitInName").value = data.user.first_name + " " + data.user.last_name;
+                        document.getElementById("sitInSession").value = "30";
+                    }
+                });
+        }
+    });
+
+    // Placeholder functions for student management
+    function searchStudents() {
+        // Implementation for searching students
+    }
+
+    function showAddStudentModal() {
+        alert("Add Student modal would open here");
+    }
+
+    function resetAllStudents() {
+        if (confirm("Are you sure you want to reset all students?")) {
+            alert("Reset functionality would go here");
+        }
+    }
+
+    // Load students on page load
+    function loadStudents() {
+        fetch('/api/users')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById("studentTableBody");
+                if (data.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='6'>No students found</td></tr>";
+                } else {
+                    tbody.innerHTML = data.map(student => `
+                        <tr>
+                            <td>${student.id_number}</td>
+                            <td>${student.first_name} ${student.last_name}</td>
+                            <td>${student.course_level}</td>
+                            <td>${student.course}</td>
+                            <td>30</td>
+                            <td>
+                                <button class="btn-edit" onclick="editStudent('${student.id_number}')">Edit</button>
+                                <button class="btn-delete" onclick="deleteStudent('${student.id_number}')">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            })
+            .catch(err => {
+                console.error('Error loading students:', err);
+                const tbody = document.getElementById("studentTableBody");
+                tbody.innerHTML = "<tr><td colspan='6'>Error loading students</td></tr>";
+            });
+    }
+
+    function editStudent(id) {
+        alert("Edit student " + id);
+    }
+
+    function deleteStudent(id) {
+        if (confirm("Are you sure you want to delete this student?")) {
+            alert("Delete student " + id);
+        }
+    }
+
+    // Initialize
+    loadStudents();
+</script>
+</html>

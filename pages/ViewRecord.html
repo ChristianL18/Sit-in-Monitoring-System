@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <title>View Sit-in Records</title>
+</head>
+<body>
+    <div class="nav">
+            <img src="../images/ucmainccslogo-removebg-preview.png" class="logo" alt="">
+            <h1 class="CCS">CCS Sit-in Monitoring System</h1>
+            <div class="links">
+                <a href="admin.html">Home</a>
+                <a href="#" onclick="showSearchModal()">Search</a>
+                <a href="Student.html">Student</a>
+                <a href="#" onclick="showSitInModal()">Sit-in</a>
+                <a href="ViewRecord.html">View Sit-in Record</a>
+                <a href="">Feedbacks Requests</a>
+                <a href="">Reservation</a>
+            </div>
+            <button type="" onclick="showLogoutModal()">Log out</button>
+            </div>
+
+            <!-- View Sit-in Records Section -->
+        <div class="sit-in-records-section" id="sitInRecordsSection">
+            <div class="records-header">
+                <h2>Current Sit-in Records</h2>
+                <div class="records-controls">
+                    <div class="entries-per-page">
+                        <label>Entries per page:</label>
+                        <select id="entriesPerPage" onchange="changeEntriesPerPage()">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="sitInSearch" placeholder="Search records..." onkeyup="searchSitInRecords()">
+                        <button class="btn-search">🔍</button>
+                    </div>
+                </div>
+            </div>
+            <div class="records-table-container">
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Course</th>
+                            <th>Year Level</th>
+                            <th>Lab</th>
+                            <th>Purpose</th>
+                            <th>Time In</th>
+                            <th>Time Out</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sitInRecordsBody">
+                        <!-- Sit-in records will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <span id="showingRecords"></span>
+                <div class="page-buttons">
+                    <button onclick="previousPage()">Previous</button>
+                    <span id="pageNumbers"></span>
+                    <button onclick="nextPage()">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logout Confirmation Modal -->
+        <div class="modal-overlay" id="logoutOverlay"></div>
+        <div class="modal" id="logoutModal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div class="modal-buttons">
+                <button onclick="confirmLogout()">Yes, Log Out</button>
+                <button onclick="closeLogoutModal()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Search Modal -->
+        <div class="modal-overlay" id="searchOverlay"></div>
+        <div class="modal" id="searchModal">
+            <h3>Search User</h3>
+            <input type="text" id="searchId" placeholder="Enter ID Number">
+            <div class="modal-buttons">
+                <button onclick="searchUser()">Search</button>
+                <button onclick="closeSearchModal()">Cancel</button>
+            </div>
+            <div id="searchResult"></div>
+        </div>
+
+        <!-- Sit-in Modal -->
+        <div class="modal-overlay" id="sitInOverlay"></div>
+        <div class="modal" id="sitInModal">
+            <h3>Sit-in Form</h3>
+            <div class="form-group">
+                <label>ID Number</label>
+                <input type="text" id="sitInId" placeholder="Enter ID Number">
+            </div>
+            <div class="form-group">
+                <label>Student Name</label>
+                <input type="text" id="sitInName" placeholder="Student Name" readonly>
+            </div>
+            <div class="form-group">
+                <label>Purpose</label>
+                <input type="text" id="sitInPurpose" placeholder="Enter Purpose">
+            </div>
+            <div class="form-group">
+                <label>Lab</label>
+                <input type="text" id="sitInLab" placeholder="Lab Number">
+            </div>
+            <div class="form-group">
+                <label>Remaining Session</label>
+                <input type="text" id="sitInSession" placeholder="30" readonly>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="submitSitIn()">Submit</button>
+                <button onclick="closeSitInModal()">Cancel</button>
+            </div>
+        </div>
+</body>
+<script>
+    // Search Modal Functions
+    function showSearchModal() {
+        document.getElementById("searchOverlay").classList.add("show");
+        document.getElementById("searchModal").classList.add("show");
+    }
+
+    function closeSearchModal() {
+        document.getElementById("searchOverlay").classList.remove("show");
+        document.getElementById("searchModal").classList.remove("show");
+        document.getElementById("searchResult").innerHTML = "";
+        document.getElementById("searchId").value = "";
+    }
+
+    function searchUser() {
+        const id = document.getElementById("searchId").value;
+        
+        fetch(`/api/search-user?id=${id}`)
+            .then(res => res.json())
+            .then(data => {
+                const resultDiv = document.getElementById("searchResult");
+                if (data.success) {
+                    const user = data.user;
+                    resultDiv.innerHTML = `
+                        <div class="user-result">
+                            <p><strong>ID:</strong> ${user.id_number}</p>
+                            <p><strong>Name:</strong> ${user.first_name} ${user.last_name}</p>
+                            <p><strong>Course:</strong> ${user.course}</p>
+                            <p><strong>Year:</strong> ${user.course_level}</p>
+                            <p><strong>Email:</strong> ${user.email}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p style="color:red;">User not found</p>`;
+                }
+            });
+    }
+
+    // Logout Modal Functions
+    function showLogoutModal() {
+        document.getElementById("logoutOverlay").classList.add("show");
+        document.getElementById("logoutModal").classList.add("show");
+    }
+
+    function closeLogoutModal() {
+        document.getElementById("logoutOverlay").classList.remove("show");
+        document.getElementById("logoutModal").classList.remove("show");
+    }
+
+    function logout() {
+        fetch('/logout', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+    }
+
+    function confirmLogout() {
+        closeLogoutModal();
+        logout();
+    }
+
+    // Sit-in Modal Functions
+    function showSitInModal() {
+        document.getElementById("sitInOverlay").classList.add("show");
+        document.getElementById("sitInModal").classList.add("show");
+    }
+
+    function closeSitInModal() {
+        document.getElementById("sitInOverlay").classList.remove("show");
+        document.getElementById("sitInModal").classList.remove("show");
+        document.getElementById("sitInId").value = "";
+        document.getElementById("sitInName").value = "";
+        document.getElementById("sitInPurpose").value = "";
+        document.getElementById("sitInLab").value = "";
+    }
+
+    function submitSitIn() {
+        const studentId = document.getElementById("sitInId").value;
+        const studentName = document.getElementById("sitInName").value;
+        const purpose = document.getElementById("sitInPurpose").value;
+        const lab = document.getElementById("sitInLab").value;
+        
+        if (!studentId || !purpose || !lab) {
+            alert("Please fill in all required fields");
+            return;
+        }
+        
+        fetch('/api/sitin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentId, studentName, purpose, lab })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Sit-in recorded successfully!");
+                closeSitInModal();
+                loadSitInRecords();
+            } else {
+                alert("Error: " + data.error);
+            }
+        });
+    }
+
+    // Auto-fill student name when ID is entered
+    document.getElementById("sitInId").addEventListener("blur", function() {
+        const id = this.value;
+        if (id) {
+            fetch(`/api/search-user?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("sitInName").value = data.user.first_name + " " + data.user.last_name;
+                        document.getElementById("sitInSession").value = "30";
+                    }
+                });
+        }
+    });
+
+    // Pagination variables
+    let currentPage = 1;
+    let entriesPerPage = 10;
+    let allRecords = [];
+
+    // Load sit-in records
+    function loadSitInRecords() {
+        fetch('/api/sitin')
+            .then(res => res.json())
+            .then(data => {
+                allRecords = data;
+                displayRecords();
+            })
+            .catch(err => {
+                console.error('Error loading records:', err);
+                const tbody = document.getElementById("sitInRecordsBody");
+                tbody.innerHTML = "<tr><td colspan='9'>Error loading records</td></tr>";
+            });
+    }
+
+    function displayRecords() {
+        const tbody = document.getElementById("sitInRecordsBody");
+        const start = (currentPage - 1) * entriesPerPage;
+        const end = start + entriesPerPage;
+        const pageRecords = allRecords.slice(start, end);
+        
+        if (pageRecords.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='9'>No records found</td></tr>";
+        } else {
+            tbody.innerHTML = pageRecords.map(record => `
+                <tr>
+                    <td>${record.student_id}</td>
+                    <td>${record.student_name}</td>
+                    <td>${record.course || 'N/A'}</td>
+                    <td>${record.year_level || 'N/A'}</td>
+                    <td>${record.lab}</td>
+                    <td>${record.purpose}</td>
+                    <td>${record.time_in}</td>
+                    <td>${record.time_out || 'Active'}</td>
+                    <td>${record.status}</td>
+                </tr>
+            `).join('');
+        }
+        
+        updatePagination();
+    }
+
+    function updatePagination() {
+        const totalPages = Math.ceil(allRecords.length / entriesPerPage);
+        document.getElementById("showingRecords").textContent = 
+            `Showing ${(currentPage - 1) * entriesPerPage + 1} to ${Math.min(currentPage * entriesPerPage, allRecords.length)} of ${allRecords.length} entries`;
+        
+        const pageNumbers = document.getElementById("pageNumbers");
+        pageNumbers.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === currentPage) {
+                pageNumbers.innerHTML += `<span class="current-page">${i}</span>`;
+            } else {
+                pageNumbers.innerHTML += `<button onclick="goToPage(${i})">${i}</button>`;
+            }
+        }
+    }
+
+    function changeEntriesPerPage() {
+        entriesPerPage = parseInt(document.getElementById("entriesPerPage").value);
+        currentPage = 1;
+        displayRecords();
+    }
+
+    function previousPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            displayRecords();
+        }
+    }
+
+    function nextPage() {
+        const totalPages = Math.ceil(allRecords.length / entriesPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            displayRecords();
+        }
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        displayRecords();
+    }
+
+    function searchSitInRecords() {
+        const searchTerm = document.getElementById("sitInSearch").value.toLowerCase();
+        const filteredRecords = allRecords.filter(record => 
+            record.student_id.toLowerCase().includes(searchTerm) ||
+            record.student_name.toLowerCase().includes(searchTerm) ||
+            record.lab.toLowerCase().includes(searchTerm) ||
+            record.purpose.toLowerCase().includes(searchTerm)
+        );
+        
+        const tbody = document.getElementById("sitInRecordsBody");
+        if (filteredRecords.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='9'>No matching records found</td></tr>";
+        } else {
+            tbody.innerHTML = filteredRecords.map(record => `
+                <tr>
+                    <td>${record.student_id}</td>
+                    <td>${record.student_name}</td>
+                    <td>${record.course || 'N/A'}</td>
+                    <td>${record.year_level || 'N/A'}</td>
+                    <td>${record.lab}</td>
+                    <td>${record.purpose}</td>
+                    <td>${record.time_in}</td>
+                    <td>${record.time_out || 'Active'}</td>
+                    <td>${record.status}</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    // Initialize
+    loadSitInRecords();
+</script>
+</html>
