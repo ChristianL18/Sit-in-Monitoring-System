@@ -19,7 +19,14 @@
                 <a href="">Reservation</a>
 
             </div>
-            <button type="">Log out</button>
+            <button type="" onclick="logout()">Log out</button>
             </div>
 </body>
+    <script>
+                function logout() {
+                    fetch('/logout', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+        }
+    </script>
 </html>

@@ -245,6 +245,7 @@
     width: 350px;
     background: rgb(225, 209, 240);
     border-radius: 25px;
+    margin-left: 30px;
 }
 .insideleft1 h3{
     font-family: Tahoma;
@@ -263,6 +264,7 @@
     width: 350px;
     background: rgb(225, 209, 240);
     border-radius: 25px;
+    margin-left: 30px;
 }
 
 .middle h3{
@@ -282,6 +284,7 @@
     width: 350px;
     background: rgb(225, 209, 240);
     border-radius: 25px;
+    margin-right: 40px;
 }
 .right1 h3{
     font-family: Tahoma;
