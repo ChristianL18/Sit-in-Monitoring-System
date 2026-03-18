@@ -43,9 +43,15 @@ CREATE TABLE IF NOT EXISTS users (
     course TEXT,
     address TEXT,
     email TEXT,
-    password TEXT
+    password TEXT,
+    profile_picture TEXT
 )
 `);
+
+/* Add profile_picture column if it doesn't exist (for existing databases) */
+db.run(`ALTER TABLE users ADD COLUMN profile_picture TEXT`, (err) => {
+    // Ignore error if column already exists
+});
 
 /* Create admin table if it doesn't exist */
 db.run(`
@@ -383,6 +389,59 @@ app.get('/main.html', (req, res) => {
 
 
 createTableAnnouncements();
+
+/* Get user profile */
+app.get("/api/profile", (req, res) => {
+    if (!req.session.userId || req.session.isAdmin) {
+        return res.json({ success: false, error: "Not authenticated" });
+    }
+    
+    const sql = `SELECT id, id_number, first_name, last_name, middle_name, 
+                 course_level, course, address, email, profile_picture 
+                 FROM users WHERE id = ?`;
+    
+    db.get(sql, [req.session.userId], (err, user) => {
+        if (err) {
+            console.log(err);
+            return res.json({ success: false, error: "Database error" });
+        }
+        
+        if (!user) {
+            return res.json({ success: false, error: "User not found" });
+        }
+        
+        res.json({ success: true, user });
+    });
+});
+
+/* Update user profile */
+app.put("/api/profile", (req, res) => {
+    if (!req.session.userId || req.session.isAdmin) {
+        return res.json({ success: false, error: "Not authenticated" });
+    }
+    
+    const { first_name, last_name, middle_name, course_level, course, address, email, profile_picture } = req.body;
+    
+    const sql = `UPDATE users SET 
+                 first_name = ?, last_name = ?, middle_name = ?, 
+                 course_level = ?, course = ?, address = ?, email = ?, 
+                 profile_picture = ? 
+                 WHERE id = ?`;
+    
+    db.run(sql, [
+        first_name, last_name, middle_name,
+        course_level, course, address, email,
+        profile_picture || null,
+        req.session.userId
+    ], function(err) {
+        if (err) {
+            console.log(err);
+            return res.json({ success: false, error: "Failed to update profile" });
+        }
+        
+        res.json({ success: true, message: "Profile updated successfully" });
+    });
+});
 
 /* Start server */
 app.listen(PORT, () => {

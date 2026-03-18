@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - CCS Sit-in Monitoring System</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .edit-profile-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .profile-picture-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-picture-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #4a90d9;
+            margin-bottom: 15px;
+            background-color: #f0f0f0;
+        }
+        
+        .profile-picture-preview.default {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: #999;
+        }
+        
+        .edit-profile-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .edit-profile-form input,
+        .edit-profile-form select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .edit-profile-form label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-save {
+            flex: 1;
+            padding: 12px;
+            background-color: #4a90d9;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .btn-save:hover {
+            background-color: #357abd;
+        }
+        
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <img src="../images/ucmainccslogo-removebg-preview.png" class="logo" alt="">
+        <h1 class="CCS">CCS Sit-in Monitoring System</h1>
+        <div class="links">
+            <a href="">Notification ⏷</a>
+            <a href="">Home</a>
+            <a href="edit-profile.html">Edit Profile</a>
+            <a href="">History</a>
+            <a href="">Reservation</a>
+        </div>
+        <button type="" onclick="showLogoutModal()">Log out</button>
+    </div>
+
+    <div class="edit-profile-container">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Edit Profile</h2>
+        
+        <div id="message" class="message" style="display: none;"></div>
+        
+        <div id="loading" class="loading">Loading profile...</div>
+        
+        <div id="profileContent" style="display: none;">
+            <!-- Profile Picture Section -->
+            <div class="profile-picture-section">
+                <img id="profilePreview" class="profile-picture-preview default" src="" alt="Profile Picture">
+                <div>
+                    <label for="profilePictureInput" style="cursor: pointer; color: #4a90d9;">
+                        📷 Change Profile Picture
+                    </label>
+                    <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            
+            <!-- Profile Form -->
+            <form id="editProfileForm" class="edit-profile-form">
+                <div class="form-row">
+                    <div>
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="first_name" required>
+                    </div>
+                    <div>
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="last_name" required>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="middleName">Middle Name</label>
+                    <input type="text" id="middleName" name="middle_name" required>
+                </div>
+                
+                <div class="form-row">
+                    <div>
+                        <label for="courseLevel">Course Level</label>
+                        <select id="courseLevel" name="course_level" required>
+                            <option value="">Select Level</option>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                            <option value="5th Year">5th Year</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="course">Course</label>
+                        <select id="course" name="course" required>
+                            <option value="">Select Course</option>
+                            <option value="BSIT">BSIT - Information Technology</option>
+                            <option value="BSCS">BSCS - Computer Science</option>
+                            <option value="BSIS">BSIS - Information System</option>
+                            <option value="BSCE">BSCE - Civil Engineering</option>
+                            <option value="BSCRIM">BSCRIM - Criminology</option>
+                            <option value="BSCA">BSCA - Customs Administration</option>
+                            <option value="BSHM">BSHM - Hospitality Management</option>
+                            <option value="BSN">BSN - Nursing</option>
+                            <option value="BSPSYCH">BSPSYCH - Psychology</option>
+                            <option value="BEED">BEED - Education</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="address">Address</label>
+                    <input type="text" id="address" name="address" required>
+                </div>
+                
+                <div>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn-save">Save Changes</button>
+                    <button type="button" class="btn-cancel" onclick="window.location.href='main.html'">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentProfilePicture = null;
+        
+        // Load profile data on page load
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/profile');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const user = result.user;
+                    
+                    // Fill form fields
+                    document.getElementById('firstName').value = user.first_name || '';
+                    document.getElementById('lastName').value = user.last_name || '';
+                    document.getElementById('middleName').value = user.middle_name || '';
+                    document.getElementById('courseLevel').value = user.course_level || '';
+                    document.getElementById('course').value = user.course || '';
+                    document.getElementById('address').value = user.address || '';
+                    document.getElementById('email').value = user.email || '';
+                    
+                    // Set profile picture
+                    currentProfilePicture = user.profile_picture;
+                    if (user.profile_picture) {
+                        document.getElementById('profilePreview').src = user.profile_picture;
+                        document.getElementById('profilePreview').classList.remove('default');
+                    } else {
+                        document.getElementById('profilePreview').textContent = '👤';
+                    }
+                    
+                    // Show content, hide loading
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('profileContent').style.display = 'block';
+                } else {
+                    showMessage(result.error || 'Failed to load profile', 'error');
+                    document.getElementById('loading').textContent = 'Error loading profile';
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showMessage('Error connecting to server', 'error');
+                document.getElementById('loading').textContent = 'Error loading profile';
+            }
+        }
+        
+        // Handle profile picture upload with preview
+        document.getElementById('profilePictureInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showMessage('Please select an image file', 'error');
+                    return;
+                }
+                
+                // Validate file size (max 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    showMessage('Image size must be less than 2MB', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    currentProfilePicture = event.target.result;
+                    document.getElementById('profilePreview').src = currentProfilePicture;
+                    document.getElementById('profilePreview').classList.remove('default');
+                    document.getElementById('profilePreview').textContent = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Handle form submission
+        document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                middle_name: document.getElementById('middleName').value,
+                course_level: document.getElementById('courseLevel').value,
+                course: document.getElementById('course').value,
+                address: document.getElementById('address').value,
+                email: document.getElementById('email').value,
+                profile_picture: currentProfilePicture
+            };
+            
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('Profile updated successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'main.html';
+                    }, 1500);
+                } else {
+                    showMessage(result.error || 'Failed to update profile', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showMessage('Error connecting to server', 'error');
+            }
+        });
+        
+        // Show message function
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            messageEl.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Logout modal function
+        function showLogoutModal() {
+            if (confirm('Are you sure you want to log out?')) {
+                window.location.href = '../index.html';
+            }
+        }
+        
+        // Load profile on page load
+        loadProfile();
+    </script>
+</body>
+</html>

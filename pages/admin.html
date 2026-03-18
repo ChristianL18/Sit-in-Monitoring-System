@@ -216,15 +216,17 @@
                     const resultDiv = document.getElementById("searchResult");
                     if (data.success) {
                         const user = data.user;
-                        resultDiv.innerHTML = `
-                            <div class="user-result">
-                                <p><strong>ID:</strong> ${user.id_number}</p>
-                                <p><strong>Name:</strong> ${user.first_name} ${user.last_name}</p>
-                                <p><strong>Course:</strong> ${user.course}</p>
-                                <p><strong>Year:</strong> ${user.course_level}</p>
-                                <p><strong>Email:</strong> ${user.email}</p>
-                            </div>
-                        `;
+                        const fullName = `${user.first_name} ${user.last_name}`;
+                        
+                        // Auto-fill the sit-in form
+                        document.getElementById("sitInId").value = user.id_number;
+                        document.getElementById("sitInName").value = fullName;
+                        
+                        // Close search modal
+                        closeSearchModal();
+                        
+                        // Open sit-in modal
+                        showSitInModal();
                     } else {
                         resultDiv.innerHTML = `<p style="color:red;">User not found</p>`;
                     }
