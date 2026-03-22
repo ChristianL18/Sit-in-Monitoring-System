@@ -9,7 +9,7 @@ const PORT = 3000;
 
 /* Built-in middleware instead of body-parser */
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 /* Session middleware */
 app.use(session({
