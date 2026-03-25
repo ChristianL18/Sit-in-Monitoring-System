@@ -92,6 +92,7 @@
             const result = await response.text();
             
             if (result.includes("Successful")) {
+                window.alert("Registration Successfully");
                 window.location.href = "/pages/Login.html";
             } else {
                 alert("Registration failed. Please try again.");
