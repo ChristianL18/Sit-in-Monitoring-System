@@ -14,7 +14,7 @@
                 <a href="admin.html">Home</a>
                 <a href="#" onclick="showSearchModal()">Search</a>
                 <a href="Student.html">Student</a>
-                <a href="#" onclick="showSitInModal()">Sit-in</a>
+                <a href="SitIn.html">Sit-in</a>
                 <a href="ViewRecord.html">View Sit-in Record</a>
                 <a href="">Feedbacks Requests</a>
                 <a href="">Reservation</a>
@@ -109,11 +109,26 @@
             </div>
             <div class="form-group">
                 <label>Purpose</label>
-                <input type="text" id="sitInPurpose" placeholder="Enter Purpose">
+                <select id="sitInPurpose" class="form-select">
+                    <option value="">Select Purpose</option>
+                    <option value="Programming">Programming</option>
+                    <option value="Research">Research</option>
+                    <option value="Internet">Internet</option>
+                    <option value="Homework">Homework</option>
+                    <option value="Assignment">Assignment</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>Lab</label>
-                <input type="text" id="sitInLab" placeholder="Lab Number">
+                <select id="sitInLab" class="form-select">
+                    <option value="">Select Lab</option>
+                    <option value="524">524</option>
+                    <option value="526">526</option>
+                    <option value="528">528</option>
+                    <option value="530">530</option>
+                    <option value="542">542</option>
+                    <option value="544">544</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>Remaining Session</label>
@@ -148,15 +163,13 @@
                 const resultDiv = document.getElementById("searchResult");
                 if (data.success) {
                     const user = data.user;
-                    resultDiv.innerHTML = `
-                        <div class="user-result">
-                            <p><strong>ID:</strong> ${user.id_number}</p>
-                            <p><strong>Name:</strong> ${user.first_name} ${user.last_name}</p>
-                            <p><strong>Course:</strong> ${user.course}</p>
-                            <p><strong>Year:</strong> ${user.course_level}</p>
-                            <p><strong>Email:</strong> ${user.email}</p>
-                        </div>
-                    `;
+                    const fullName = `${user.first_name} ${user.last_name}`;
+                    
+                    // Close search modal
+                    closeSearchModal();
+                    
+                    // Redirect to Sit-in page with student info
+                    window.location.href = `SitIn.html?id=${user.id_number}&name=${encodeURIComponent(fullName)}`;
                 } else {
                     resultDiv.innerHTML = `<p style="color:red;">User not found</p>`;
                 }

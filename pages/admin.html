@@ -15,7 +15,7 @@
                 <a href="admin.html">Home</a>
                 <a href="#" onclick="showSearchModal()">Search</a>
                 <a href="Student.html">Student</a>
-                <a href="#" onclick="showSitInModal()">Sit-in</a>
+                <a href="SitIn.html">Sit-in</a>
                 <a href="ViewRecord.html">View Sit-in Record</a>
                 <a href="">Feedbacks Requests</a>
                 <a href="">Reservation</a>
@@ -96,14 +96,28 @@
                 <input type="text" id="sitInName" placeholder="Student Name" readonly>
             </div>
             <div class="form-group">
-                <label>Purpose</label>
-                <input type="text" id="sitInPurpose" placeholder="Enter Purpose">
-            </div>
-            <div class="form-group">
-                <label>Lab</label>
-                <input type="text" id="sitInLab" placeholder="Lab Number">
-                
-            </div>
+            <label>Purpose</label>
+            <select id="sitInPurpose" class="form-select">
+                <option value="">Select Purpose</option>
+                <option value="Programming">Programming</option>
+                <option value="Research">Research</option>
+                <option value="Internet">Internet</option>
+                <option value="Homework">Homework</option>
+                <option value="Assignment">Assignment</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Lab</label>
+            <select id="sitInLab" class="form-select">
+                <option value="">Select Lab</option>
+                <option value="524">524</option>
+                <option value="526">526</option>
+                <option value="528">528</option>
+                <option value="530">530</option>
+                <option value="542">542</option>
+                <option value="544">544</option>
+            </select>
+        </div>
             <div class="form-group">
                 <label>Remaining Session</label>
                 <input type="text" id="sitInSession" placeholder="30" readonly>

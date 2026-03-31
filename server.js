@@ -297,10 +297,16 @@ function createTableSitIn(){
             lab TEXT,
             time_in DATETIME DEFAULT CURRENT_TIMESTAMP,
             time_out DATETIME,
-            status TEXT DEFAULT 'active'
+            status TEXT DEFAULT 'active',
+            sessions INTEGER DEFAULT 30
         )
     `)
 }
+
+// Add sessions column if it doesn't exist (for existing databases)
+db.run(`ALTER TABLE sitin ADD COLUMN sessions INTEGER DEFAULT 30`, (err) => {
+    // Ignore error if column already exists
+});
 
 // Get all sit-in records
 app.get('/api/sitin', (req, res) => {
@@ -312,11 +318,37 @@ app.get('/api/sitin', (req, res) => {
     });
 });
 
+// Time out a sit-in record - decrements session by 1
+app.put('/api/sitin/:id/timeout', (req, res) => {
+    const { id } = req.params;
+    const timeOut = new Date().toISOString();
+    
+    // First get current sessions
+    db.get("SELECT sessions FROM sitin WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: "Failed to time out" });
+        }
+        
+        const currentSessions = row ? row.sessions : 30;
+        const newSessions = currentSessions - 1;
+        
+        // Update with decremented sessions
+        const sql = `UPDATE sitin SET time_out = ?, status = 'completed', sessions = ? WHERE id = ?`;
+        
+        db.run(sql, [timeOut, newSessions, id], function(err) {
+            if (err) {
+                return res.status(500).json({ error: "Failed to time out" });
+            }
+            res.json({ success: true, message: "Student timed out successfully", remainingSessions: newSessions });
+        });
+    });
+});
+
 // Create sit-in
 app.post('/api/sitin', (req, res) => {
     const { studentId, studentName, purpose, lab } = req.body;
     
-    const sql = `INSERT INTO sitin (student_id, student_name, purpose, lab, status) VALUES (?, ?, ?, ?, 'active')`;
+    const sql = `INSERT INTO sitin (student_id, student_name, purpose, lab, status, sessions) VALUES (?, ?, ?, ?, 'active', 30)`;
     
     db.run(sql, [studentId, studentName, purpose, lab], function(err) {
         if (err) {
@@ -367,8 +399,12 @@ app.get('/api/language-stats', (req, res) => {
 createTableSitIn();
 
 
-app.get('/pages/main.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'pages/main.html'));
+app.get('/SitIn.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/SitIn.html'));
+});
+
+app.get('/pages/SitIn.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/SitIn.html'));
 });
 
 app.get('/pages/admin.html', (req, res) => {

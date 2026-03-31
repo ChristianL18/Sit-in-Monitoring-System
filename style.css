@@ -1148,6 +1148,123 @@
     font-size: 12px;
 }
 
+/* Current Sit-in Section Styles */
+.current-sit-in-section {
+    padding: 30px;
+    margin-top: 20px;
+}
+
+.sit-in-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.sit-in-header h2 {
+    font-family: Tahoma, sans-serif;
+    font-size: 28px;
+    color: #4D2FB2;
+    margin: 0;
+}
+
+.btn-add-sitin {
+    padding: 12px 24px;
+    background: #4D2FB2;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-add-sitin:hover {
+    background: #6B4FD6;
+}
+
+.sit-in-table-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.sit-in-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Tahoma, sans-serif;
+}
+
+.sit-in-table thead {
+    background: #4D2FB2;
+    color: white;
+}
+
+.sit-in-table th {
+    padding: 15px 10px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sit-in-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 13px;
+    color: #333;
+}
+
+.sit-in-table tbody tr:hover {
+    background: #f5f3ff;
+}
+
+.sit-in-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.btn-action {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 15px;
+    font-family: Tahoma, sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-timeout {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-timeout:hover {
+    background: #c0392b;
+}
+
+.no-records {
+    text-align: center;
+    padding: 50px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.no-records p {
+    font-family: Tahoma, sans-serif;
+    font-size: 16px;
+    color: #666;
+}
+
 .status-completed {
     color: #7f8c8d;
     font-weight: bold;
