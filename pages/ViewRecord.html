@@ -25,7 +25,7 @@
             <!-- View Sit-in Records Section -->
         <div class="sit-in-records-section" id="sitInRecordsSection">
             <div class="records-header">
-                <h2>Current Sit-in Records</h2>
+                <h2>All Sit-in Records</h2>
                 <div class="records-controls">
                     <div class="entries-per-page">
                         <label>Entries per page:</label>
@@ -54,6 +54,7 @@
                             <th>Purpose</th>
                             <th>Time In</th>
                             <th>Time Out</th>
+                            <th>Session Remaining</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -272,7 +273,7 @@
             .catch(err => {
                 console.error('Error loading records:', err);
                 const tbody = document.getElementById("sitInRecordsBody");
-                tbody.innerHTML = "<tr><td colspan='9'>Error loading records</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='10'>Error loading records</td></tr>";
             });
     }
 
@@ -283,7 +284,7 @@
         const pageRecords = allRecords.slice(start, end);
         
         if (pageRecords.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='9'>No records found</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='10'>No records found</td></tr>";
         } else {
             tbody.innerHTML = pageRecords.map(record => `
                 <tr>
@@ -295,6 +296,7 @@
                     <td>${record.purpose}</td>
                     <td>${record.time_in}</td>
                     <td>${record.time_out || 'Active'}</td>
+                    <td>${record.sessions || 0}</td>
                     <td>${record.status}</td>
                 </tr>
             `).join('');

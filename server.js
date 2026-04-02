@@ -1,4 +1,4 @@
-const express = require("express");
+    const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const session = require("express-session");
@@ -310,7 +310,7 @@ db.run(`ALTER TABLE sitin ADD COLUMN sessions INTEGER DEFAULT 30`, (err) => {
 
 // Get all sit-in records
 app.get('/api/sitin', (req, res) => {
-    db.all("SELECT * FROM sitin ORDER BY time_in DESC", [], (err, rows) => {
+    db.all("SELECT s.*, u.course, u.course_level as year_level FROM sitin s LEFT JOIN users u ON s.student_id = u.id_number ORDER BY s.time_in DESC", [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: 'Error fetching records' });
         }
