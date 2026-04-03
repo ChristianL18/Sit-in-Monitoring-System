@@ -376,22 +376,17 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-// Get language statistics
+// Get language/purpose statistics
 app.get('/api/language-stats', (req, res) => {
-    const languages = { 'C#': 0, 'C': 0, 'Java': 0, 'ASP.NET': 0, 'PHP': 0 };
-    
-    db.all("SELECT lab, COUNT(*) as count FROM sitin GROUP BY lab", [], (err, rows) => {
+    db.all("SELECT purpose, COUNT(*) as count FROM sitin WHERE status = 'active' GROUP BY purpose ORDER BY count DESC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: 'Error' });
         
-        rows.forEach(row => {
-            if (languages.hasOwnProperty(row.lab)) {
-                languages[row.lab] = row.count;
-            }
-        });
+        const labels = rows.map(row => row.purpose);
+        const data = rows.map(row => row.count);
         
         res.json({ 
-            labels: Object.keys(languages), 
-            data: Object.values(languages) 
+            labels: labels, 
+            data: data 
         });
     });
 });

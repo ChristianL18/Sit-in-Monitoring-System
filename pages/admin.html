@@ -183,31 +183,74 @@
                         document.getElementById("totalSitIn").textContent = data.totalSitIn;
                     });
 
-                // Language Chart
-                const ctx = document.getElementById('languageChart').getContext('2d');
-                const languageChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['C#', 'C', 'Java', 'ASP.NET', 'PHP'],
-                        datasets: [{
-                            label: 'Students per Language',
-                            data: [0, 0, 0, 0, 0],
-                            backgroundColor: ['#4D2FB2', '#6B4FD6', '#8B6FFF', '#A08EFF', '#C4B5FF'],
-                            borderRadius: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: { y: { beginAtZero: true } }
-                    }
-                });
+                // Dynamic Language/Purpose Chart
+                let languageChart = null;
+                const chartColors = ['#4D2FB2', '#6B4FD6', '#8B6FFF', '#A08EFF', '#C4B5FF', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
 
-                fetch('/api/language-stats')
-                    .then(res => res.json())
-                    .then(data => {
-                        languageChart.data.datasets[0].data = data.data;
-                        languageChart.update();
+                function initChart() {
+                    const ctx = document.getElementById('languageChart').getContext('2d');
+                    languageChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: [],
+                            datasets: [{
+                                label: 'Active Sit-ins by Purpose',
+                                data: [],
+                                backgroundColor: chartColors,
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { 
+                                y: { 
+                                    beginAtZero: true,
+                                    ticks: { stepSize: 1 }
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Count: ${context.raw}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     });
+                }
+
+                function updateChartData(data) {
+                    if (!languageChart) {
+                        initChart();
+                    }
+                    languageChart.data.labels = data.labels;
+                    languageChart.data.datasets[0].data = data.data;
+                    
+                    // Update colors dynamically based on data length
+                    languageChart.data.datasets[0].backgroundColor = chartColors.slice(0, data.labels.length);
+                    languageChart.update();
+                }
+
+                // Fetch and update language statistics
+                function fetchLanguageStats() {
+                    fetch('/api/language-stats')
+                        .then(res => res.json())
+                        .then(data => {
+                            updateChartData(data);
+                        })
+                        .catch(err => console.error('Error fetching language stats:', err));
+                }
+
+                // Initialize chart and fetch data
+                initChart();
+                fetchLanguageStats();
+
+                // Auto-refresh every 30 seconds
+                setInterval(fetchLanguageStats, 30000);
 
                 function showSearchModal() {
                 document.getElementById("searchOverlay").classList.add("show");
