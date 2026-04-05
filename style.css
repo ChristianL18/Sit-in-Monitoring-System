@@ -1680,3 +1680,109 @@
     border-radius: 5px;
     box-sizing: border-box;
 }
+
+/* history */
+
+ .history-section {
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .history-header h2 {
+            font-family: Tahoma, sans-serif;
+            font-size: 28px;
+            color: #4D2FB2;
+            margin: 0;
+        }
+
+        .history-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 2px solid #4D2FB2;
+            border-radius: 25px;
+            overflow: hidden;
+        }
+
+        .search-box input {
+            padding: 10px 15px;
+            border: none;
+            outline: none;
+            font-family: Tahoma, sans-serif;
+            font-size: 14px;
+            width: 200px;
+            border-radius: 25px 0 0 25px;
+        }
+
+        .search-box .btn-search {
+            padding: 10px 15px;
+            background: #4D2FB2;
+            border: none;
+            cursor: pointer;
+            border-radius: 0 25px 25px 0;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .search-box .btn-search:hover {
+            background: #6B4FD6;
+        }
+
+        .history-table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Tahoma, sans-serif;
+        }
+
+        .history-table thead {
+            background: #4D2FB2;
+            color: white;
+        }
+
+        .history-table th {
+            padding: 18px 15px;
+            text-align: left;
+            font-size: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .history-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f5f3ff;
+        }
+
+        .history-table tbody tr:last-child td {
+            border-bottom: none;
+        }

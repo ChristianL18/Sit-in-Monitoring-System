@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Sit-in History</title>
+</head>
+<body>
+    <div class="nav">
+            <img
+                src="../images/ucmainccslogo-removebg-preview.png"
+                class="logo"
+                alt=""
+            />
+            <h1 class="CCS">CCS Sit-in Monitoring System</h1>
+            <div class="links">
+                <a href="">Notification ⏷</a>
+                <a href="main.html">Home</a>
+                <a href="edit-profile.html">Edit Profile</a>
+                <a href="history.html">History</a>
+                <a href="">Reservation</a>
+            </div>
+            <button type="" onclick="showLogoutModal()">Log out</button>
+        </div>
+
+    <div class="history-section">
+        <div class="history-header">
+            <h2>Sit-in History (Successful Sit-in Transactions)</h2>
+            <div class="history-controls">
+                <div class="search-box">
+                    <input type="text" id="historySearch" placeholder="Search history..." onkeyup="searchHistory()">
+                    <button class="btn-search">🔍</button>
+                </div>
+            </div>
+        </div>
+        <div class="history-table-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Purpose</th>
+                        <th>Lab</th>
+                        <th>Time In</th>
+                        <th>Time Out</th>
+                        <th>Sessions Remaining</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function searchHistory() {
+            const searchTerm = document.getElementById("historySearch").value.toLowerCase();
+            const rows = document.querySelectorAll("#historyTableBody tr");
+            
+            rows.forEach(row => {
+                const idNumber = row.cells[0].textContent.toLowerCase();
+                const name = row.cells[1].textContent.toLowerCase();
+                const purpose = row.cells[2].textContent.toLowerCase();
+                const lab = row.cells[3].textContent.toLowerCase();
+                
+                if (idNumber.includes(searchTerm) || name.includes(searchTerm) || purpose.includes(searchTerm) || lab.includes(searchTerm)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        function loadHistory() {
+            fetch('/api/sitin')
+                .then(res => res.json())
+                .then(sitins => {
+                    const tbody = document.getElementById("historyTableBody");
+                    const completed = sitins.filter(s => s.status === 'completed');
+                    
+                    if (completed.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='7'>No completed sit-in records found</td></tr>";
+                    } else {
+                        tbody.innerHTML = completed.map(sitin => {
+                            const timeIn = new Date(sitin.time_in);
+                            const timeOut = new Date(sitin.time_out);
+                            
+                            const formatDateTime = (date) => {
+                                return date.toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'short', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                            };
+                            
+                            return `
+                                <tr>
+                                    <td>${sitin.student_id}</td>
+                                    <td>${sitin.student_name}</td>
+                                    <td>${sitin.purpose}</td>
+                                    <td>${sitin.lab}</td>
+                                    <td>${formatDateTime(timeIn)}</td>
+                                    <td>${formatDateTime(timeOut)}</td>
+                                    <td>${sitin.sessions}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading history:', err);
+                    const tbody = document.getElementById("historyTableBody");
+                    tbody.innerHTML = "<tr><td colspan='7'>Error loading history</td></tr>";
+                });
+        }
+
+        function showLogoutModal() {
+            if (confirm("Are you sure you want to log out?")) {
+                fetch('/logout', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+            }
+        }
+
+        window.onload = loadHistory;
+    </script>
+</body>
+</html>
