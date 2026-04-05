@@ -257,11 +257,48 @@ app.get('/api/search-user', (req, res) => {
 
 // Get all users (for student management)
 app.get('/api/users', (req, res) => {
-    db.all("SELECT id, id_number, first_name, last_name, course_level, course, email FROM users ORDER BY last_name", [], (err, users) => {
+    db.all("SELECT id, id_number, first_name, last_name, middle_name, course_level, course, email, address, remaining_sessions FROM users ORDER BY last_name", [], (err, users) => {
         if (err) {
             return res.status(500).json({ error: "Database error" });
         }
         res.json(users);
+    });
+});
+
+// Update a user
+app.put('/api/users/:idNumber', (req, res) => {
+    const { idNumber } = req.params;
+    const { first_name, last_name, middle_name, course_level, course, email, address } = req.body;
+    
+    const sql = `UPDATE users SET first_name = ?, last_name = ?, middle_name = ?, course_level = ?, course = ?, email = ?, address = ? WHERE id_number = ?`;
+    
+    db.run(sql, [first_name, last_name, middle_name, course_level, course, email, address, idNumber], function(err) {
+        if (err) {
+            return res.status(500).json({ error: "Failed to update user" });
+        }
+        
+        if (this.changes === 0) {
+            return res.json({ success: false, error: "User not found" });
+        }
+        
+        res.json({ success: true, message: "User updated successfully" });
+    });
+});
+
+// Delete a user
+app.delete('/api/users/:idNumber', (req, res) => {
+    const { idNumber } = req.params;
+    
+    db.run("DELETE FROM users WHERE id_number = ?", [idNumber], function(err) {
+        if (err) {
+            return res.status(500).json({ error: "Failed to delete user" });
+        }
+        
+        if (this.changes === 0) {
+            return res.json({ success: false, error: "User not found" });
+        }
+        
+        res.json({ success: true, message: "User deleted successfully" });
     });
 });
 
@@ -308,6 +345,10 @@ db.run(`ALTER TABLE sitin ADD COLUMN sessions INTEGER DEFAULT 30`, (err) => {
     // Ignore error if column already exists
 });
 
+db.run(`ALTER TABLE users ADD COLUMN remaining_sessions INTEGER DEFAULT 30`, (err) => {
+    // Ignore error if column already exists
+});
+
 // Get all sit-in records
 app.get('/api/sitin', (req, res) => {
     db.all("SELECT s.*, u.course, u.course_level as year_level FROM sitin s LEFT JOIN users u ON s.student_id = u.id_number ORDER BY s.time_in DESC", [], (err, rows) => {
@@ -323,22 +364,30 @@ app.put('/api/sitin/:id/timeout', (req, res) => {
     const { id } = req.params;
     const timeOut = new Date().toISOString();
     
-    // First get current sessions
-    db.get("SELECT sessions FROM sitin WHERE id = ?", [id], (err, row) => {
+    db.get("SELECT sessions, student_id FROM sitin WHERE id = ?", [id], (err, row) => {
         if (err) {
             return res.status(500).json({ error: "Failed to time out" });
         }
         
         const currentSessions = row ? row.sessions : 30;
-        const newSessions = currentSessions - 1;
+        const studentId = row ? row.student_id : null;
+        const newSessions = Math.max(0, currentSessions - 1);
         
-        // Update with decremented sessions
         const sql = `UPDATE sitin SET time_out = ?, status = 'completed', sessions = ? WHERE id = ?`;
         
         db.run(sql, [timeOut, newSessions, id], function(err) {
             if (err) {
                 return res.status(500).json({ error: "Failed to time out" });
             }
+            
+            if (studentId) {
+                db.run("UPDATE users SET remaining_sessions = ? WHERE id_number = ?", [newSessions, studentId], (err) => {
+                    if (err) {
+                        console.log("Failed to update remaining_sessions for student:", studentId);
+                    }
+                });
+            }
+            
             res.json({ success: true, message: "Student timed out successfully", remainingSessions: newSessions });
         });
     });
@@ -348,13 +397,32 @@ app.put('/api/sitin/:id/timeout', (req, res) => {
 app.post('/api/sitin', (req, res) => {
     const { studentId, studentName, purpose, lab } = req.body;
     
-    const sql = `INSERT INTO sitin (student_id, student_name, purpose, lab, status, sessions) VALUES (?, ?, ?, ?, 'active', 30)`;
-    
-    db.run(sql, [studentId, studentName, purpose, lab], function(err) {
+    // Check if student already has an active sit-in
+    db.get("SELECT id FROM sitin WHERE student_id = ? AND status = 'active'", [studentId], (err, existingSitIn) => {
         if (err) {
-            return res.status(500).json({ error: "Failed to create sit-in" });
+            return res.status(500).json({ error: "Database error" });
         }
-        res.json({ success: true });
+        
+        if (existingSitIn) {
+            return res.json({ success: false, error: "Student already has an active sit-in session" });
+        }
+        
+        db.get("SELECT remaining_sessions FROM users WHERE id_number = ?", [studentId], (err, row) => {
+            if (err) {
+                return res.status(500).json({ error: "Failed to fetch student sessions" });
+            }
+            
+            const sessions = row && row.remaining_sessions !== undefined ? row.remaining_sessions : 30;
+            
+            const sql = `INSERT INTO sitin (student_id, student_name, purpose, lab, status, sessions) VALUES (?, ?, ?, ?, 'active', ?)`;
+            
+            db.run(sql, [studentId, studentName, purpose, lab, sessions], function(err) {
+                if (err) {
+                    return res.status(500).json({ error: "Failed to create sit-in" });
+                }
+                res.json({ success: true, sessions: sessions });
+            });
+        });
     });
 });
 
@@ -373,6 +441,48 @@ app.get('/api/stats', (req, res) => {
                 res.json(stats);
             });
         });
+    });
+});
+
+// Get student remaining sessions
+app.get('/api/student-sessions/:idNumber', (req, res) => {
+    db.get("SELECT remaining_sessions FROM users WHERE id_number = ?", [req.params.idNumber], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: "Database error" });
+        }
+        const sessions = row && row.remaining_sessions !== undefined ? row.remaining_sessions : 30;
+        res.json({ sessions: sessions });
+    });
+});
+
+// Reset student sessions
+app.put('/api/reset-sessions/:idNumber', (req, res) => {
+    db.run("UPDATE users SET remaining_sessions = 30 WHERE id_number = ?", [req.params.idNumber], function(err) {
+        if (err) {
+            return res.status(500).json({ error: "Failed to reset sessions" });
+        }
+        res.json({ success: true });
+    });
+});
+
+// Get student remaining sessions
+app.get('/api/student-sessions/:idNumber', (req, res) => {
+    db.get("SELECT remaining_sessions FROM users WHERE id_number = ?", [req.params.idNumber], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: "Database error" });
+        }
+        const sessions = row && row.remaining_sessions !== undefined ? row.remaining_sessions : 30;
+        res.json({ sessions: sessions });
+    });
+});
+
+// Reset student sessions
+app.put('/api/reset-sessions/:idNumber', (req, res) => {
+    db.run("UPDATE users SET remaining_sessions = 30 WHERE id_number = ?", [req.params.idNumber], function(err) {
+        if (err) {
+            return res.status(500).json({ error: "Failed to reset sessions" });
+        }
+        res.json({ success: true });
     });
 });
 

@@ -45,7 +45,7 @@
                             <span>📍Address:</span>
                             <span id="addressValue">Loading...</span>
                         </p>
-                        <p id=""><span>🕓Session:</span> 30</p>
+                        <p id=""><span>🕓Session:</span> <span id="sessionValue">Loading...</span></p>
                     </div>
                 </div>
 
@@ -103,6 +103,21 @@
                     document.getElementById("yearValue").textContent = data.course_level || "N/A";
                     document.getElementById("emailValue").textContent = data.email || "N/A";
                     document.getElementById("addressValue").textContent = data.address || "N/A";
+                    
+                    // Extract ID number from the email or fetch separately
+                    // For now, we'll use a separate API call to get the user's ID
+                    fetch("/api/profile")
+                        .then(res => res.json())
+                        .then(profileData => {
+                            if (profileData.success && profileData.user) {
+                                const idNumber = profileData.user.id_number;
+                                fetch(`/api/student-sessions/${idNumber}`)
+                                    .then(res => res.json())
+                                    .then(sessionData => {
+                                        document.getElementById("sessionValue").textContent = sessionData.sessions;
+                                    });
+                            }
+                        });
                 })
                 .catch((err) => {
                     console.error("Error fetching student info:", err);

@@ -328,7 +328,11 @@
                 .then(data => {
                     if (data.success) {
                         document.getElementById("sitInName").value = data.user.first_name + " " + data.user.last_name;
-                        document.getElementById("sitInSession").value = "30";
+                        fetch(`/api/student-sessions/${id}`)
+                            .then(res => res.json())
+                            .then(sessionData => {
+                                document.getElementById("sitInSession").value = sessionData.sessions;
+                            });
                     }
                 });
         }
