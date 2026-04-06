@@ -108,6 +108,119 @@
                 <button onclick="closeSitInModal()">Cancel</button>
             </div>
         </div>
+
+        <!-- Add Student Modal -->
+        <div class="modal-overlay" id="addStudentOverlay"></div>
+        <div class="modal" id="addStudentModal">
+            <h3>Add Student</h3>
+            <div class="form-group">
+                <label>ID Number</label>
+                <input type="text" id="addIdNumber" placeholder="Enter ID Number">
+            </div>
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" id="addFirstName" placeholder="First Name">
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" id="addLastName" placeholder="Last Name">
+            </div>
+            <div class="form-group">
+                <label>Middle Name</label>
+                <input type="text" id="addMiddleName" placeholder="Middle Name">
+            </div>
+            <div class="form-group">
+                <label>Course</label>
+                <select id="addCourse">
+                    <option value="">Select Course</option>
+                    <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
+                    <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
+                    <option value="BSBA">BSBA - Bachelor of Science in Business Administration</option>
+                    <option value="BSHRM">BSHRM - Bachelor of Science in Hospitality Management</option>
+                    <option value="BSED">BSED - Bachelor of Secondary Education</option>
+                    <option value="BEED">BEED - Bachelor of Elementary Education</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Year Level</label>
+                <select id="addCourseLevel">
+                    <option value="">Select Year</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="addEmail" placeholder="Email Address">
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="addAddress" placeholder="Address">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="addPassword" placeholder="Password">
+            </div>
+            <div class="modal-buttons">
+                <button onclick="submitAddStudent()">Add Student</button>
+                <button onclick="closeAddStudentModal()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Edit Student Modal -->
+        <div class="modal-overlay" id="editStudentOverlay"></div>
+        <div class="modal" id="editStudentModal">
+            <h3>Edit Student</h3>
+            <input type="hidden" id="editIdNumber">
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" id="editFirstName" placeholder="First Name">
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" id="editLastName" placeholder="Last Name">
+            </div>
+            <div class="form-group">
+                <label>Middle Name</label>
+                <input type="text" id="editMiddleName" placeholder="Middle Name">
+            </div>
+            <div class="form-group">
+                <label>Course</label>
+                <select id="editCourse">
+                    <option value="">Select Course</option>
+                    <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
+                    <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
+                    <option value="BSBA">BSBA - Bachelor of Science in Business Administration</option>
+                    <option value="BSHRM">BSHRM - Bachelor of Science in Hospitality Management</option>
+                    <option value="BSED">BSED - Bachelor of Secondary Education</option>
+                    <option value="BEED">BEED - Bachelor of Elementary Education</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Year Level</label>
+                <select id="editCourseLevel">
+                    <option value="">Select Year</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="editEmail" placeholder="Email Address">
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="editAddress" placeholder="Address">
+            </div>
+            <div class="modal-buttons">
+                <button onclick="submitEditStudent()">Save Changes</button>
+                <button onclick="closeEditStudentModal()">Cancel</button>
+            </div>
+        </div>
 </body>
 <script>
     // Search Modal Functions
@@ -226,21 +339,6 @@
         }
     });
 
-    // Placeholder functions for student management
-    function searchStudents() {
-        // Implementation for searching students
-    }
-
-    function showAddStudentModal() {
-        alert("Add Student modal would open here");
-    }
-
-    function resetAllStudents() {
-        if (confirm("Are you sure you want to reset all students?")) {
-            alert("Reset functionality would go here");
-        }
-    }
-
     // Load students on page load
     function loadStudents() {
         fetch('/api/users')
@@ -256,8 +354,9 @@
                             <td>${student.first_name} ${student.last_name}</td>
                             <td>${student.course_level}</td>
                             <td>${student.course}</td>
-                            <td>30</td>
+                            <td>${student.remaining_sessions !== undefined ? student.remaining_sessions : 30}</td>
                             <td>
+                                <button class="btn-reset" onclick="resetStudentSession('${student.id_number}')">Reset Session</button>
                                 <button class="btn-edit" onclick="editStudent('${student.id_number}')">Edit</button>
                                 <button class="btn-delete" onclick="deleteStudent('${student.id_number}')">Delete</button>
                             </td>
@@ -272,13 +371,184 @@
             });
     }
 
-    function editStudent(id) {
-        alert("Edit student " + id);
+    // Search students
+    function searchStudents() {
+        const searchTerm = document.getElementById("studentSearch").value.toLowerCase();
+        const rows = document.querySelectorAll("#studentTableBody tr");
+        
+        rows.forEach(row => {
+            const idNumber = row.cells[0].textContent.toLowerCase();
+            const name = row.cells[1].textContent.toLowerCase();
+            const year = row.cells[2].textContent.toLowerCase();
+            const course = row.cells[3].textContent.toLowerCase();
+            
+            if (idNumber.includes(searchTerm) || name.includes(searchTerm) || year.includes(searchTerm) || course.includes(searchTerm)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
     }
 
+    // Add Student Modal Functions
+    function showAddStudentModal() {
+        document.getElementById("addStudentOverlay").classList.add("show");
+        document.getElementById("addStudentModal").classList.add("show");
+        document.getElementById("addIdNumber").value = "";
+        document.getElementById("addFirstName").value = "";
+        document.getElementById("addLastName").value = "";
+        document.getElementById("addMiddleName").value = "";
+        document.getElementById("addCourse").value = "";
+        document.getElementById("addCourseLevel").value = "";
+        document.getElementById("addEmail").value = "";
+        document.getElementById("addAddress").value = "";
+        document.getElementById("addPassword").value = "";
+    }
+
+    function closeAddStudentModal() {
+        document.getElementById("addStudentOverlay").classList.remove("show");
+        document.getElementById("addStudentModal").classList.remove("show");
+    }
+
+    function submitAddStudent() {
+        const id_number = document.getElementById("addIdNumber").value;
+        const first_name = document.getElementById("addFirstName").value;
+        const last_name = document.getElementById("addLastName").value;
+        const middle_name = document.getElementById("addMiddleName").value;
+        const course = document.getElementById("addCourse").value;
+        const course_level = document.getElementById("addCourseLevel").value;
+        const email = document.getElementById("addEmail").value;
+        const address = document.getElementById("addAddress").value;
+        const password = document.getElementById("addPassword").value;
+
+        if (!id_number || !first_name || !last_name || !course || !course_level || !password) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        fetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_number, first_name, last_name, middle_name, course, course_level, email, address, password })
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data.includes("Successful")) {
+                alert("Student added successfully!");
+                closeAddStudentModal();
+                loadStudents();
+            } else {
+                alert("Error: " + data);
+            }
+        });
+    }
+
+    // Edit Student Modal Functions
+    function editStudent(id) {
+        fetch(`/api/search-user?id=${id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const user = data.user;
+                    document.getElementById("editIdNumber").value = user.id_number;
+                    document.getElementById("editFirstName").value = user.first_name;
+                    document.getElementById("editLastName").value = user.last_name;
+                    document.getElementById("editMiddleName").value = user.middle_name || "";
+                    document.getElementById("editCourse").value = user.course;
+                    document.getElementById("editCourseLevel").value = user.course_level;
+                    document.getElementById("editEmail").value = user.email || "";
+                    document.getElementById("editAddress").value = user.address || "";
+                    
+                    document.getElementById("editStudentOverlay").classList.add("show");
+                    document.getElementById("editStudentModal").classList.add("show");
+                }
+            });
+    }
+
+    function closeEditStudentModal() {
+        document.getElementById("editStudentOverlay").classList.remove("show");
+        document.getElementById("editStudentModal").classList.remove("show");
+    }
+
+    function submitEditStudent() {
+        const id_number = document.getElementById("editIdNumber").value;
+        const first_name = document.getElementById("editFirstName").value;
+        const last_name = document.getElementById("editLastName").value;
+        const middle_name = document.getElementById("editMiddleName").value;
+        const course = document.getElementById("editCourse").value;
+        const course_level = document.getElementById("editCourseLevel").value;
+        const email = document.getElementById("editEmail").value;
+        const address = document.getElementById("editAddress").value;
+
+        if (!first_name || !last_name || !course || !course_level) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        fetch(`/api/users/${id_number}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ first_name, last_name, middle_name, course, course_level, email, address })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Student updated successfully!");
+                closeEditStudentModal();
+                loadStudents();
+            } else {
+                alert("Error: " + data.error);
+            }
+        });
+    }
+
+    // Delete Student
     function deleteStudent(id) {
         if (confirm("Are you sure you want to delete this student?")) {
-            alert("Delete student " + id);
+            fetch(`/api/users/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Student deleted successfully!");
+                        loadStudents();
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                });
+        }
+    }
+
+    // Reset single student session
+    function resetStudentSession(id) {
+        if (confirm("Reset this student's sessions to 30?")) {
+            fetch(`/api/reset-sessions/${id}`, { method: 'PUT' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Session reset successfully!");
+                        loadStudents();
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                });
+        }
+    }
+
+    // Reset All Students
+    function resetAllStudents() {
+        if (confirm("Are you sure you want to reset all students' sessions to 30?")) {
+            fetch('/api/users')
+                .then(res => res.json())
+                .then(students => {
+                    const resetPromises = students.map(student => 
+                        fetch(`/api/reset-sessions/${student.id_number}`, { method: 'PUT' })
+                    );
+                    Promise.all(resetPromises)
+                        .then(() => {
+                            alert("All students' sessions have been reset to 30!");
+                            loadStudents();
+                        });
+                });
         }
     }
 

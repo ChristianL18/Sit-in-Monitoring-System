@@ -1529,6 +1529,11 @@
     max-width: 90%;
 }
 
+#addStudentModal, #editStudentModal {
+    width: 500px;
+    max-width: 90%;
+}
+
 .chart-container {
     background: white;
     padding: 20px;
