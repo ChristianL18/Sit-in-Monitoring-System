@@ -45,6 +45,7 @@
                         <th>Time In</th>
                         <th>Time Out</th>
                         <th>Sessions Remaining</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="historyTableBody">
@@ -80,7 +81,7 @@
                     const completed = sitins.filter(s => s.status === 'completed');
                     
                     if (completed.length === 0) {
-                        tbody.innerHTML = "<tr><td colspan='7'>No completed sit-in records found</td></tr>";
+                        tbody.innerHTML = "<tr><td colspan='8'>No completed sit-in records found</td></tr>";
                     } else {
                         tbody.innerHTML = completed.map(sitin => {
                             const timeIn = new Date(sitin.time_in);
@@ -105,6 +106,7 @@
                                     <td>${formatDateTime(timeIn)}</td>
                                     <td>${formatDateTime(timeOut)}</td>
                                     <td>${sitin.sessions}</td>
+                                    <td><button class="btn-feedback" onclick="openFeedback('${sitin.student_id}', '${sitin.student_name}')">Feedback</button></td>
                                 </tr>
                             `;
                         }).join('');
@@ -113,7 +115,7 @@
                 .catch(err => {
                     console.error('Error loading history:', err);
                     const tbody = document.getElementById("historyTableBody");
-                    tbody.innerHTML = "<tr><td colspan='7'>Error loading history</td></tr>";
+                    tbody.innerHTML = "<tr><td colspan='8'>Error loading history</td></tr>";
                 });
         }
 

@@ -1786,3 +1786,39 @@
         .history-table tbody tr:last-child td {
             border-bottom: none;
         }
+
+        .btn-feedback {
+            padding: 8px 16px;
+            background: #7C3AED;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-family: Tahoma, sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-feedback:hover {
+            background: #6B4FD6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-feedback {
+            padding: 8px 16px;
+            background: #7C3AED;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-family: Tahoma, sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-feedback:hover {
+            background: #6B4FD6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+        }
