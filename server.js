@@ -531,6 +531,82 @@ app.get('/main.html', (req, res) => {
 
 createTableAnnouncements();
 
+// Create feedback table
+function createTableFeedback() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            user_type TEXT,
+            user_name TEXT,
+            feedback_text TEXT,
+            rating INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+}
+
+// Submit feedback
+app.post('/api/feedback', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, error: "Not authenticated" });
+    }
+
+    const { feedback_text, rating } = req.body;
+    const userId = req.session.userId;
+    const userType = req.session.isAdmin ? 'admin' : 'user';
+
+    if (!feedback_text || !rating) {
+        return res.json({ success: false, error: "Feedback text and rating are required" });
+    }
+
+    let userName = 'Anonymous';
+    if (req.session.isAdmin) {
+        db.get("SELECT username FROM admins WHERE id = ?", [userId], (err, row) => {
+            if (row) userName = row.username;
+            insertFeedback();
+        });
+    } else {
+        db.get("SELECT first_name, last_name FROM users WHERE id = ?", [userId], (err, row) => {
+            if (row) userName = row.first_name + ' ' + row.last_name;
+            insertFeedback();
+        });
+    }
+
+    function insertFeedback() {
+        const sql = `INSERT INTO feedback (user_id, user_type, user_name, feedback_text, rating) VALUES (?, ?, ?, ?, ?)`;
+        db.run(sql, [userId, userType, userName, feedback_text, rating], function(err) {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ success: false, error: "Failed to submit feedback" });
+            }
+            res.json({ success: true, message: "Feedback submitted successfully" });
+        });
+    }
+});
+
+// Get all feedback (for admin)
+app.get('/api/feedback', (req, res) => {
+    db.all("SELECT * FROM feedback ORDER BY created_at DESC", [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: "Failed to fetch feedback" });
+        }
+        res.json(rows);
+    });
+});
+
+// Delete feedback (for admin)
+app.delete('/api/feedback/:id', (req, res) => {
+    db.run("DELETE FROM feedback WHERE id = ?", [req.params.id], function(err) {
+        if (err) {
+            return res.status(500).json({ error: "Failed to delete feedback" });
+        }
+        res.json({ success: true });
+    });
+});
+
+createTableFeedback();
+
 /* Get user profile */
 app.get("/api/profile", (req, res) => {
     if (!req.session.userId || req.session.isAdmin) {
