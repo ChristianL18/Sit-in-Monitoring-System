@@ -1467,6 +1467,11 @@
     max-width: 90%;
 }
 
+#logoutModal {
+    width: 600px;
+    max-width: 90%;
+}
+
 .modal.show, .modal-overlay.show {
     display: block;
 }

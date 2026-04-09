@@ -79,6 +79,17 @@
         </div>
     </div>
 
+    <!-- Logout Modal -->
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal" id="logoutModal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+        <div class="modal-buttons">
+            <button onclick="confirmLogout()">Yes, Log Out</button>
+            <button onclick="closeLogoutModal()">Cancel</button>
+        </div>
+    </div>
+
     <script>
         function searchHistory() {
             const searchTerm = document.getElementById("historySearch").value.toLowerCase();
@@ -145,11 +156,19 @@
         }
 
         function showLogoutModal() {
-            if (confirm("Are you sure you want to log out?")) {
-                fetch('/logout', { method: 'POST' })
-                    .then(r => r.json())
-                    .then(d => { if (d.success) window.location.href = d.redirectUrl; });
-            }
+            document.getElementById("logoutOverlay").classList.add("show");
+            document.getElementById("logoutModal").classList.add("show");
+        }
+        
+        function closeLogoutModal() {
+            document.getElementById("logoutOverlay").classList.remove("show");
+            document.getElementById("logoutModal").classList.remove("show");
+        }
+        
+        function confirmLogout() {
+            fetch('/logout', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => { if (d.success) window.location.href = d.redirectUrl; });
         }
 
         function openFeedback(studentId, studentName) {
