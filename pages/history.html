@@ -15,11 +15,17 @@
             />
             <h1 class="CCS">CCS Sit-in Monitoring System</h1>
             <div class="links">
-                <a href="">Notification ⏷</a>
+                <div class="notification-dropdown">
+                    <a href="#" class="notification-toggle" onclick="toggleNotificationDropdown(event)">Notification ⏷</a>
+                    <div class="notification-menu" id="notificationMenu">
+                        <div class="notification-menu-header">Announcements</div>
+                        <div id="notificationList"></div>
+                    </div>
+                </div>
                 <a href="main.html">Home</a>
                 <a href="edit-profile.html">Edit Profile</a>
                 <a href="history.html">History</a>
-                <a href="">Reservation</a>
+                <a href="reservation.html">Reservation</a>
             </div>
             <button type="" onclick="showLogoutModal()">Log out</button>
         </div>
@@ -170,6 +176,47 @@
                 .then(r => r.json())
                 .then(d => { if (d.success) window.location.href = d.redirectUrl; });
         }
+
+        function toggleNotificationDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const dropdown = document.getElementById("notificationMenu");
+            dropdown.classList.toggle("show");
+            loadNotificationDropdown();
+        }
+
+        function loadNotificationDropdown() {
+            const container = document.getElementById("notificationList");
+            if (container.children.length > 0) return;
+            
+            fetch("/api/announcements")
+                .then(res => res.json())
+                .then(data => {
+                    container.innerHTML = "";
+                    if (data.length === 0) {
+                        container.innerHTML = '<div class="notification-empty">No announcements</div>';
+                        return;
+                    }
+                    data.slice(0, 5).forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = "notification-item";
+                        div.innerHTML = `
+                            <div class="notification-item-title">${item.title}</div>
+                            <div class="notification-item-date">${new Date(item.created_at).toLocaleDateString()}</div>
+                            <div class="notification-item-desc">${item.description}</div>
+                        `;
+                        container.appendChild(div);
+                    });
+                });
+        }
+
+        document.addEventListener("click", function(event) {
+            const dropdown = document.getElementById("notificationMenu");
+            const toggle = document.querySelector(".notification-toggle");
+            if (dropdown && toggle && !dropdown.contains(event.target) && !toggle.contains(event.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
 
         function openFeedback(studentId, studentName) {
             document.getElementById("feedbackOverlay").classList.add("show");

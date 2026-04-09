@@ -315,7 +315,7 @@ app.post('/logout', (req, res) => {
 
 
 app.get('/api/announcements', (req, res) => {
-    db.all('SELECT title, description, created_at FROM Annoucements ORDER BY created_at DESC', [], (err, rows) => {
+    db.all('SELECT id, title, description, created_at FROM Annoucements ORDER BY created_at DESC', [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: 'Error' });
         }

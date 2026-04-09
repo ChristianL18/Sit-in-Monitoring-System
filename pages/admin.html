@@ -50,13 +50,15 @@
 
 
 
-            <div class="announcements-holder">
-                    <h1>Announcement</h1>
-                    <input class="adtitle" placeholder="Title" id="announcetitle">
-                    <textarea class="adannounce" placeholder="Announcement" id="announcementBio"></textarea>
-                    <button type="" onclick="addAnnouncement()">Add Announcement</button>
-                    <div id="announcements" class="announcement-section"></div>
+            <div class="admin-announcements-section">
+                <h1>Announcements</h1>
+                <div class="announcement-form">
+                    <input type="text" placeholder="Title" id="announcetitle">
+                    <textarea placeholder="Write your announcement here..." id="announcementBio"></textarea>
+                    <button type="" class="btn-add-announcement" onclick="addAnnouncement()">Post Announcement</button>
                 </div>
+                <div id="announcements" class="admin-announcement-list"></div>
+            </div>
             </div>
 
        <!-- Logout Confirmation Modal -->
@@ -150,29 +152,45 @@
                     alert("Announcement posted!");
                     document.getElementById("announcetitle").value = "";
                     document.getElementById("announcementBio").value = "";
-                    location.reload();
+                    loadAnnouncements();
                 }
             });
         }
+
+        function loadAnnouncements() {
             fetch("/api/announcements")
                 .then((res) => res.json())
                 .then((data) => {
                     const container = document.getElementById("announcements");
+                    container.innerHTML = "";
+                    
+                    if (data.length === 0) {
+                        container.innerHTML = `
+                            <div class="admin-no-announcements">
+                                <div class="admin-no-announcements-icon">📢</div>
+                                <p>No announcements yet</p>
+                                <p style="font-size: 13px;">Post your first announcement above</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
                     data.forEach((item) => {
                         const div = document.createElement("div");
-                        div.className = "announcement";
+                        div.className = "admin-announcement-item";
                         div.innerHTML = `
-                            <div class="title">${item.title} | ${new Date(item.created_at).toLocaleDateString()}</div>
-                            <p>${item.description}</p>
+                            <div class="admin-announcement-header">
+                                <div class="admin-announcement-title">${item.title}</div>
+                                <div class="admin-announcement-date">${new Date(item.created_at).toLocaleDateString()}</div>
+                            </div>
+                            <div class="admin-announcement-desc">${item.description}</div>
                         `;
                         container.appendChild(div);
-
-                        // Add line separator
-                        const sep = document.createElement("div");
-                        sep.className = "separator";
-                        container.appendChild(sep);
                     });
                 });
+        }
+
+        loadAnnouncements();
 
                 // Fetch statistics
                 fetch("/api/stats")
