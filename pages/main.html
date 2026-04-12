@@ -180,26 +180,36 @@
 
             function loadNotificationDropdown() {
                 const container = document.getElementById("notificationList");
-                if (container.children.length > 0) return;
+                container.innerHTML = '<div class="notification-loading">Loading...</div>';
                 
-                fetch("/api/announcements")
+                fetch("/api/notifications")
                     .then(res => res.json())
-                    .then(data => {
+                    .then(response => {
+                        const announcements = response.announcements || [];
+                        const notifications = response.notifications || [];
+                        const all = [...announcements, ...notifications];
+                        all.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                        
                         container.innerHTML = "";
-                        if (data.length === 0) {
-                            container.innerHTML = '<div class="notification-empty">No announcements</div>';
+                        if (all.length === 0) {
+                            container.innerHTML = '<div class="notification-empty">No notifications</div>';
                             return;
                         }
-                        data.slice(0, 5).forEach(item => {
+                        all.slice(0, 5).forEach(item => {
                             const div = document.createElement("div");
                             div.className = "notification-item";
+                            const title = item.title || item.description;
+                            const desc = item.message || item.description;
                             div.innerHTML = `
-                                <div class="notification-item-title">${item.title}</div>
+                                <div class="notification-item-title">${title}</div>
                                 <div class="notification-item-date">${new Date(item.created_at).toLocaleDateString()}</div>
-                                <div class="notification-item-desc">${item.description}</div>
+                                <div class="notification-item-desc">${desc}</div>
                             `;
                             container.appendChild(div);
                         });
+                    })
+                    .catch(err => {
+                        container.innerHTML = '<div class="notification-empty">Error loading</div>';
                     });
             }
 

@@ -14,9 +14,9 @@ app.use(express.json({ limit: '10mb' }));
 /* Session middleware */
 app.use(session({
     secret: "your-secret-key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false }
+    resave: true,
+    saveUninitialized: true,
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
 
 /* Serve static files */
@@ -227,7 +227,7 @@ app.get('/api/studentinfo', (req, res) => {
     }
     
     db.get(`
-        SELECT first_name || ' ' || last_name AS name, course, course_level, email, address
+        SELECT id_number, first_name || ' ' || last_name AS name, course, course_level, email, address
         FROM users
         WHERE id = ?
     `, [req.session.userId], (err, row) => {
@@ -320,6 +320,41 @@ app.get('/api/announcements', (req, res) => {
             return res.status(500).json({ error: 'Error' });
         }
         res.json(rows);
+    });
+});
+
+// Get all notifications and announcements
+app.get('/api/notifications', (req, res) => {
+    db.all('SELECT id, title, description, created_at FROM Annoucements ORDER BY created_at DESC', [], (err, announcements) => {
+        if (err) {
+            console.log('Announcements error:', err);
+            return res.status(500).json({ error: 'Error' });
+        }
+        
+        db.all('SELECT * FROM notifications ORDER BY created_at DESC', [], (err, notifs) => {
+            if (err) {
+                console.log('Notifications error:', err);
+                return res.status(500).json({ error: 'Error' });
+            }
+            
+            res.json({ announcements: announcements || [], notifications: notifs || [] });
+        });
+    });
+});
+
+// Mark notification as read
+app.put('/api/notification/:id/read', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, error: "Not authenticated" });
+    }
+    
+    const { id } = req.params;
+    
+    db.run("UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?", [id, req.session.userId], function(err) {
+        if (err) {
+            return res.json({ success: false, error: "Database error" });
+        }
+        res.json({ success: true });
     });
 });
 
@@ -545,6 +580,152 @@ function createTableFeedback() {
         )
     `);
 }
+
+// Create reservations table
+function createTableReservations() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS reservations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT,
+            student_name TEXT,
+            lab TEXT,
+            pc TEXT,
+            date TEXT,
+            time_in TEXT,
+            purpose TEXT,
+            status TEXT DEFAULT 'pending'
+        )
+    `);
+}
+
+// Create notifications table
+function createTableNotifications() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            title TEXT,
+            message TEXT,
+            type TEXT,
+            is_read INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+}
+
+createTableNotifications();
+
+createTableReservations();
+
+// Get PC availability
+app.get('/api/pcs', (req, res) => {
+    const { lab, date, timeIn } = req.query;
+    
+    if (!lab) {
+        return res.json({});
+    }
+    
+    const pcs = {};
+    for (let i = 1; i <= 50; i++) {
+        pcs['PC' + i] = 'available';
+    }
+    
+    if (date && timeIn) {
+        db.all("SELECT pc, status FROM reservations WHERE lab = ? AND date = ? AND time_in = ?", [lab, date, timeIn], (err, rows) => {
+            if (err) {
+                console.log(err);
+                return res.json(pcs);
+            }
+            
+            rows.forEach(row => {
+                if (row.status === 'approved') {
+                    pcs[row.pc] = 'unavailable';
+                } else {
+                    pcs[row.pc] = 'reserved';
+                }
+            });
+            
+            res.json(pcs);
+        });
+    } else {
+        res.json(pcs);
+    }
+});
+
+// Submit reservation
+app.post('/api/reservation', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, error: "Not authenticated" });
+    }
+    
+    const { student_id, student_name, date, time_in, lab, pc, purpose } = req.body;
+    
+    if (!student_id || !date || !time_in || !lab || !pc || !purpose) {
+        return res.json({ success: false, error: "All fields are required" });
+    }
+    
+    db.run(`INSERT INTO reservations (student_id, student_name, lab, pc, date, time_in, purpose, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`, 
+        [student_id, student_name, lab, pc, date, time_in, purpose], 
+        function(err) {
+            if (err) {
+                console.log(err);
+                return res.json({ success: false, error: "Database error" });
+            }
+            res.json({ success: true, message: "Reservation submitted successfully" });
+        });
+});
+
+// Get all reservations (admin)
+app.get('/api/reservations', (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(403).json({ error: "Access denied" });
+    }
+    
+    db.all("SELECT * FROM reservations ORDER BY id DESC", [], (err, rows) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: "Database error" });
+        }
+        res.json(rows);
+    });
+});
+
+// Update reservation status
+app.put('/api/reservation/:id', (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(403).json({ success: false, error: "Access denied" });
+    }
+    
+    const { status } = req.body;
+    const { id } = req.params;
+    
+    db.get("SELECT * FROM reservations WHERE id = ?", [id], (err, reservation) => {
+        if (err || !reservation) {
+            return res.json({ success: false, error: "Reservation not found" });
+        }
+        
+        db.run("UPDATE reservations SET status = ? WHERE id = ?", [status, id], function(err) {
+            if (err) {
+                console.log(err);
+                return res.json({ success: false, error: "Database error" });
+            }
+            
+            const userIdSql = "SELECT id FROM users WHERE id_number = ?";
+            db.get(userIdSql, [reservation.student_id], (err, user) => {
+                if (user) {
+                    const title = status === 'approved' ? 'Reservation Approved' : 'Reservation Denied';
+                    const message = status === 'approved' 
+                        ? `Your reservation for ${reservation.lab} - ${reservation.pc} on ${reservation.date} has been approved.`
+                        : `Your reservation for ${reservation.lab} - ${reservation.pc} on ${reservation.date} has been denied.`;
+                    
+                    db.run("INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)", 
+                        [user.id, title, message, 'reservation']);
+                }
+                res.json({ success: true });
+            });
+        });
+    });
+});
 
 // Submit feedback
 app.post('/api/feedback', (req, res) => {

@@ -8,90 +8,316 @@
 </head>
 <body>
     <div class="nav">
-            <img
-                src="../images/ucmainccslogo-removebg-preview.png"
-                class="logo"
-                alt=""
-            />
-            <h1 class="CCS">CCS Sit-in Monitoring System</h1>
-            <div class="links">
-                <div class="notification-dropdown">
-                    <a href="#" class="notification-toggle" onclick="toggleNotificationDropdown(event)">Notification ⏷</a>
-                    <div class="notification-menu" id="notificationMenu">
-                        <div class="notification-menu-header">Announcements</div>
-                        <div id="notificationList"></div>
-                    </div>
+        <img src="../images/ucmainccslogo-removebg-preview.png" class="logo" alt="">
+        <h1 class="CCS">CCS Sit-in Monitoring System</h1>
+        <div class="links">
+            <div class="notification-dropdown">
+                <a href="#" class="notification-toggle" onclick="toggleNotificationDropdown(event)">Notification ⏷</a>
+                <div class="notification-menu" id="notificationMenu">
+                    <div class="notification-menu-header">Announcements</div>
+                    <div id="notificationList"></div>
                 </div>
-                <a href="main.html">Home</a>
-                <a href="edit-profile.html">Edit Profile</a>
-                <a href="history.html">History</a>
-                <a href="reservation.html">Reservation</a>
             </div>
-            <button type="" onclick="showLogoutModal()">Log out</button>
+            <a href="main.html">Home</a>
+            <a href="edit-profile.html">Edit Profile</a>
+            <a href="history.html">History</a>
+            <a href="reservation.html">Reservation</a>
         </div>
+        <button type="" onclick="showLogoutModal()">Log out</button>
+    </div>
 
-        <script>
-            function showLogoutModal() {
-                document.getElementById("logoutOverlay").classList.add("show");
-                document.getElementById("logoutModal").classList.add("show");
-            }
+    <main>
+        <div class="reservemain">
+            <div class="reservestudentinfo">
+                <h2>Student Information</h2>
+                <div class="reservestudentinfo-content">
+                    <p><span>Student ID:</span> <span id="studentIdValue">Loading...</span></p>
+                    <p><span>Name:</span> <span id="nameValue">Loading...</span></p>
+                </div>
+            </div>
 
-            function closeLogoutModal() {
-                document.getElementById("logoutOverlay").classList.remove("show");
-                document.getElementById("logoutModal").classList.remove("show");
-            }
+            <div class="reserveform">
+                <h2>Make a Reservation</h2>
+                <form id="reservationForm">
+                    <div class="formrow">
+                        <div class="formgroup">
+                            <label>Date</label>
+                            <input type="date" id="reservationDate" required>
+                        </div>
+                        <div class="formgroup">
+                            <label>Time In</label>
+                            <select id="timeIn" required>
+                                <option value="">-- Select Time --</option>
+                                <option value="08:00 AM">08:00 AM</option>
+                                <option value="09:00 AM">09:00 AM</option>
+                                <option value="10:00 AM">10:00 AM</option>
+                                <option value="11:00 AM">11:00 AM</option>
+                                <option value="12:00 PM">12:00 PM</option>
+                                <option value="01:00 PM">01:00 PM</option>
+                                <option value="02:00 PM">02:00 PM</option>
+                                <option value="03:00 PM">03:00 PM</option>
+                                <option value="04:00 PM">04:00 PM</option>
+                                <option value="05:00 PM">05:00 PM</option>
+                                <option value="06:00 PM">06:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="formrow">
+                        <div class="formgroup">
+                            <label>Laboratory</label>
+                            <select id="labSelect" required onchange="loadPCs()">
+                                <option value="">-- Select Lab --</option>
+                                <option value="524">Room 524</option>
+                                <option value="526">Room 526</option>
+                                <option value="528">Room 528</option>
+                                <option value="530">Room 530</option>
+                                <option value="542">Room 542</option>
+                                <option value="544">Room 544</option>
+                            </select>
+                        </div>
+                        <div class="formgroup">
+                            <label>Purpose</label>
+                            <select id="purpose" required>
+                                <option value="">-- Select Purpose --</option>
+                                <option value="C Programming">C Programming</option>
+                                <option value="Java">Java</option>
+                                <option value="Python">Python</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Database">Database</option>
+                                <option value="Machine Learning">Machine Learning</option>
+                                <option value="Data Structures">Data Structures</option>
+                                <option value="Algorithm">Algorithm</option>
+                                <option value="OOP">OOP</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
 
-            function logout() {
-                fetch('/logout', { method: 'POST' })
-                .then(r => r.json())
-                .then(d => { if (d.success) window.location.href = d.redirectUrl; });
-            }
+                    <div class="pcselection">
+                        <label>Select PC</label>
+                        <button type="button" class="pcselectbtn" onclick="openPCModal()">
+                            <span id="selectedPCText">Select PC</span>
+                        </button>
+                    </div>
 
-            function confirmLogout() {
-                closeLogoutModal();
-                logout();
-            }
+                    <button type="submit" class="btnreserve">Reserve</button>
+                </form>
+            </div>
+        </div>
+    </main>
 
-            function toggleNotificationDropdown(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                const dropdown = document.getElementById("notificationMenu");
-                dropdown.classList.toggle("show");
-                loadNotificationDropdown();
-            }
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal" id="logoutModal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+        <div class="modal-buttons">
+            <button onclick="confirmLogout()">Yes, Log Out</button>
+            <button onclick="closeLogoutModal()">Cancel</button>
+        </div>
+    </div>
 
-            function loadNotificationDropdown() {
-                const container = document.getElementById("notificationList");
-                if (container.children.length > 0) return;
-                
-                fetch("/api/announcements")
-                    .then(res => res.json())
-                    .then(data => {
-                        container.innerHTML = "";
-                        if (data.length === 0) {
-                            container.innerHTML = '<div class="notification-empty">No announcements</div>';
-                            return;
-                        }
-                        data.slice(0, 5).forEach(item => {
-                            const div = document.createElement("div");
-                            div.className = "notification-item";
-                            div.innerHTML = `
-                                <div class="notification-item-title">${item.title}</div>
-                                <div class="notification-item-date">${new Date(item.created_at).toLocaleDateString()}</div>
-                                <div class="notification-item-desc">${item.description}</div>
-                            `;
-                            container.appendChild(div);
-                        });
-                    });
-            }
+    <div class="modal-overlay" id="pcModalOverlay"></div>
+    <div class="modal" id="pcModal">
+        <h3>Select PC</h3>
+        <div class="pc-modal-grid" id="pcModalGrid"></div>
+        <div class="modal-buttons">
+            <button onclick="closePCModal()">Cancel</button>
+        </div>
+    </div>
 
-            document.addEventListener("click", function(event) {
-                const dropdown = document.getElementById("notificationMenu");
-                const toggle = document.querySelector(".notification-toggle");
-                if (dropdown && toggle && !dropdown.contains(event.target) && !toggle.contains(event.target)) {
-                    dropdown.classList.remove("show");
+    <script>
+        let selectedPC = null;
+        let pcStatus = {};
+
+        document.getElementById('reservationDate').min = new Date().toISOString().split('T')[0];
+
+        fetch('/api/profile')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    document.getElementById('studentIdValue').textContent = data.user.id_number || 'N/A';
+                    document.getElementById('nameValue').textContent = (data.user.first_name + ' ' + data.user.last_name) || 'N/A';
                 }
+            })
+            .catch(err => {
+                console.error('Error loading profile:', err);
             });
-        </script>
+
+        function openPCModal() {
+            const lab = document.getElementById('labSelect').value;
+            const date = document.getElementById('reservationDate').value;
+            const timeIn = document.getElementById('timeIn').value;
+
+            if (!lab) {
+                alert('Please select a laboratory first');
+                return;
+            }
+            if (!date) {
+                alert('Please select a date first');
+                return;
+            }
+            if (!timeIn) {
+                alert('Please select a time first');
+                return;
+            }
+
+            fetch(`/api/pcs?lab=${lab}&date=${date}&timeIn=${timeIn}`)
+                .then(res => res.json())
+                .then(data => {
+                    pcStatus = data;
+                    renderPCModal();
+                    document.getElementById('pcModalOverlay').classList.add('show');
+                    document.getElementById('pcModal').classList.add('show');
+                })
+                .catch(err => {
+                    console.error('Error loading PCs:', err);
+                    alert('Error loading PCs');
+                });
+        }
+
+        function closePCModal() {
+            document.getElementById('pcModalOverlay').classList.remove('show');
+            document.getElementById('pcModal').classList.remove('show');
+        }
+
+        function renderPCModal() {
+            const grid = document.getElementById('pcModalGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 50; i++) {
+                const pcNum = 'PC' + i;
+                const status = pcStatus[pcNum] || 'available';
+                const pcDiv = document.createElement('div');
+                pcDiv.className = `pc-box pc-${status} ${selectedPC === pcNum ? 'selected' : ''}`;
+                pcDiv.textContent = pcNum;
+                pcDiv.onclick = () => selectPC(pcNum, status);
+                grid.appendChild(pcDiv);
+            }
+        }
+
+        function selectPC(pcNum, status) {
+            if (status === 'unavailable') {
+                alert('This PC is not available');
+                return;
+            }
+
+            selectedPC = pcNum;
+            document.getElementById('selectedPCText').textContent = pcNum;
+            closePCModal();
+        }
+
+        document.getElementById('reservationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!selectedPC) {
+                alert('Please select a PC');
+                return;
+            }
+
+            const reservationData = {
+                student_id: document.getElementById('studentIdValue').textContent,
+                student_name: document.getElementById('nameValue').textContent,
+                date: document.getElementById('reservationDate').value,
+                time_in: document.getElementById('timeIn').value,
+                lab: document.getElementById('labSelect').value,
+                pc: selectedPC,
+                purpose: document.getElementById('purpose').value
+            };
+
+            fetch('/api/reservation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reservationData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Reservation submitted successfully!');
+                    document.getElementById('reservationForm').reset();
+                    selectedPC = null;
+                    document.getElementById('selectedPCText').textContent = 'Select PC';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Error submitting reservation:', err);
+                alert('Failed to submit reservation');
+            });
+        });
+
+        function showLogoutModal() {
+            document.getElementById("logoutOverlay").classList.add("show");
+            document.getElementById("logoutModal").classList.add("show");
+        }
+
+        function closeLogoutModal() {
+            document.getElementById("logoutOverlay").classList.remove("show");
+            document.getElementById("logoutModal").classList.remove("show");
+        }
+
+        function logout() {
+            fetch('/logout', { method: 'POST' })
+            .then(r => r.json())
+            .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+        }
+
+        function confirmLogout() {
+            closeLogoutModal();
+            logout();
+        }
+
+        function toggleNotificationDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const dropdown = document.getElementById("notificationMenu");
+            dropdown.classList.toggle("show");
+            loadNotificationDropdown();
+        }
+
+        function loadNotificationDropdown() {
+            const container = document.getElementById("notificationList");
+            container.innerHTML = '<div class="notification-loading">Loading...</div>';
+            
+            fetch("/api/notifications")
+                .then(res => res.json())
+                .then(response => {
+                    const announcements = response.announcements || [];
+                    const notifications = response.notifications || [];
+                    const all = [...announcements, ...notifications];
+                    all.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    
+                    container.innerHTML = "";
+                    if (all.length === 0) {
+                        container.innerHTML = '<div class="notification-empty">No notifications</div>';
+                        return;
+                    }
+                    all.slice(0, 5).forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = "notification-item";
+                        const title = item.title || item.description;
+                        const desc = item.message || item.description;
+                        div.innerHTML = `
+                            <div class="notification-item-title">${title}</div>
+                            <div class="notification-item-date">${new Date(item.created_at).toLocaleDateString()}</div>
+                            <div class="notification-item-desc">${desc}</div>
+                        `;
+                        container.appendChild(div);
+                    });
+                })
+                .catch(err => {
+                    container.innerHTML = '<div class="notification-empty">Error loading</div>';
+                });
+        }
+
+        document.addEventListener("click", function(event) {
+            const dropdown = document.getElementById("notificationMenu");
+            const toggle = document.querySelector(".notification-toggle");
+            if (dropdown && toggle && !dropdown.contains(event.target) && !toggle.contains(event.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1472,6 +1472,11 @@
     max-width: 90%;
 }
 
+#pcModal {
+    width: 600px;
+    max-width: 90%;
+}
+
 .modal.show, .modal-overlay.show {
     display: block;
 }
@@ -2063,10 +2068,344 @@
             transition: all 0.3s ease;
         }
 
-        .btn-feedback:hover {
+.btn-feedback:hover {
             background: #6B4FD6;
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+        }
+
+        /* Reservation Page */
+        .reservemain {
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .reservestudentinfo {
+            width: 300px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .reservestudentinfo h2 {
+            color: #4D2FB2;
+            font-family: Tahoma, sans-serif;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .reservestudentinfo-content p {
+            font-family: Tahoma, sans-serif;
+            font-size: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f5f3ff;
+            border-radius: 8px;
+        }
+
+        .reservestudentinfo-content span:first-child {
+            font-weight: bold;
+            color: #4D2FB2;
+            margin-right: 10px;
+        }
+
+        .reserveform {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .reserveform h2 {
+            color: #4D2FB2;
+            font-family: Tahoma, sans-serif;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .formrow {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .formgroup {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .formgroup label {
+            font-family: Tahoma, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .formgroup input,
+        .formgroup select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: Tahoma, sans-serif;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .formgroup input:focus,
+        .formgroup select:focus {
+            outline: none;
+            border-color: #4D2FB2;
+        }
+
+        .pcselection {
+            margin-top: 20px;
+        }
+
+        .pcselection label {
+            font-family: Tahoma, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .pcgrid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .pc-box {
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+            font-family: Tahoma, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pc-available {
+            background: #22c55e;
+            color: white;
+            cursor: pointer;
+        }
+
+        .pc-unavailable {
+            background: #ef4444;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .pc-reserved {
+            background: #fbbf24;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .pc-box.selected {
+            box-shadow: 0 0 0 4px #4D2FB2;
+        }
+
+        .pcselectbtn {
+            padding: 12px 20px;
+            background: #4D2FB2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: Tahoma, sans-serif;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .pcselectbtn:hover {
+            background: #6B4FD6;
+        }
+
+        .pc-modal-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .pc-modal-grid .pc-box {
+            padding: 15px 10px;
+            text-align: center;
+        }
+
+        .pc-select-prompt,
+        .pc-loading,
+        .pc-error {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 30px;
+            font-family: Tahoma, sans-serif;
+            color: #666;
+        }
+
+        .btnreserve {
+            width: 100%;
+            padding: 15px;
+            background: #4D2FB2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: Tahoma, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: background 0.3s;
+        }
+
+        .btnreserve:hover {
+            background: #6B4FD6;
+        }
+
+        /* Reservation Request Page */
+        .reservationrequestmain {
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .reservationrequestheader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .reservationrequestheader h2 {
+            color: #4D2FB2;
+            font-family: Tahoma, sans-serif;
+            font-size: 22px;
+        }
+
+        .reservationrequestcontrols {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .reservationrequestcontrols select {
+            padding: 10px 15px;
+            border: 2px solid #4D2FB2;
+            border-radius: 25px;
+            font-family: Tahoma, sans-serif;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .reservationrequesttable {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .reservationrequesttable table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Tahoma, sans-serif;
+        }
+
+        .reservationrequesttable thead {
+            background: #4D2FB2;
+            color: white;
+        }
+
+        .reservationrequesttable th {
+            padding: 18px 15px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .reservationrequesttable td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .reservationrequesttable tbody tr:hover {
+            background: #f5f3ff;
+        }
+
+        .statusbadge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-approved {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-denied {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-approve {
+            padding: 8px 16px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-family: Tahoma, sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-approve:hover {
+            background: #16a34a;
+        }
+
+        .btn-deny {
+            padding: 8px 16px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-family: Tahoma, sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-deny:hover {
+            background: #dc2626;
         }
 
         .rating {

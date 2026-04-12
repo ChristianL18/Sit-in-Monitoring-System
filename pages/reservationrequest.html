@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Reservation Request</title>
+</head>
+<body>
+    <div class="nav">
+        <img src="../images/ucmainccslogo-removebg-preview.png" class="logo" alt="">
+        <h1 class="CCS">CCS Sit-in Monitoring System</h1>
+        <div class="links">
+            <div class="notification-dropdown">
+                <a href="#" class="notification-toggle" onclick="toggleNotificationDropdown(event)">Notification ⏷</a>
+                <div class="notification-menu" id="notificationMenu">
+                    <div class="notification-menu-header">Announcements</div>
+                    <div id="notificationList"></div>
+                </div>
+            </div>
+            <a href="admin.html">Home</a>
+            <a href="Student.html">Student</a>
+            <a href="SitIn.html">Sit-in</a>
+            <a href="ViewRecord.html">View Sit-in Record</a>
+            <a href="feedbackreq.html">Feedbacks</a>
+            <a href="reservationrequest.html">Reservation</a>
+        </div>
+        <button type="" onclick="showLogoutModal()">Log out</button>
+    </div>
+
+    <main>
+        <div class="reservationrequestmain">
+            <div class="reservationrequestheader">
+                <h2>Reservation Requests</h2>
+                <div class="reservationrequestcontrols">
+                    <div class="search-box">
+                        <input type="text" id="searchReservation" placeholder="Search..." onkeyup="searchReservations()">
+                        <button class="btn-search">🔍</button>
+                    </div>
+                    <select id="filterStatus" onchange="filterReservations()">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="denied">Denied</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="reservationrequesttable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Laboratory</th>
+                            <th>PC</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservationTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="logoutOverlay"></div>
+    <div class="modal" id="logoutModal">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+        <div class="modal-buttons">
+            <button onclick="confirmLogout()">Yes, Log Out</button>
+            <button onclick="closeLogoutModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        function loadReservations() {
+            fetch('/api/reservations')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("reservationTableBody");
+                    
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='9'>No reservation requests found</td></tr>";
+                    } else {
+                        tbody.innerHTML = data.map(reservation => `
+                            <tr data-status="${reservation.status}">
+                                <td>${reservation.student_id}</td>
+                                <td>${reservation.student_name}</td>
+                                <td>${reservation.lab}</td>
+                                <td>${reservation.pc}</td>
+                                <td>${reservation.date}</td>
+                                <td>${reservation.time_in}</td>
+                                <td>${reservation.purpose}</td>
+                                <td><span class="statusbadge status-${reservation.status}">${reservation.status}</span></td>
+                                <td>
+                                    ${reservation.status === 'pending' ? `
+                                        <button class="btn-approve" onclick="updateStatus('${reservation.id}', 'approved')">Approve</button>
+                                        <button class="btn-deny" onclick="updateStatus('${reservation.id}', 'denied')">Deny</button>
+                                    ` : '-'}
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading reservations:', err);
+                    document.getElementById("reservationTableBody").innerHTML = "<tr><td colspan='9'>Error loading reservations</td></tr>";
+                });
+        }
+
+        function updateStatus(id, status) {
+            if (!confirm(`Are you sure you want to ${status} this reservation?`)) {
+                return;
+            }
+
+            fetch(`/api/reservation/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Reservation ${status} successfully!`);
+                    loadReservations();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Error updating reservation:', err);
+                alert('Failed to update reservation');
+            });
+        }
+
+        function searchReservations() {
+            const searchTerm = document.getElementById("searchReservation").value.toLowerCase();
+            const rows = document.querySelectorAll("#reservationTableBody tr");
+            
+            rows.forEach(row => {
+                const studentId = row.cells[0].textContent.toLowerCase();
+                const studentName = row.cells[1].textContent.toLowerCase();
+                const lab = row.cells[2].textContent.toLowerCase();
+                
+                if (studentId.includes(searchTerm) || studentName.includes(searchTerm) || lab.includes(searchTerm)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        function filterReservations() {
+            const statusFilter = document.getElementById("filterStatus").value;
+            const rows = document.querySelectorAll("#reservationTableBody tr");
+            
+            rows.forEach(row => {
+                const status = row.dataset.status;
+                
+                if (statusFilter === "all" || status === statusFilter) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        function showLogoutModal() {
+            document.getElementById("logoutOverlay").classList.add("show");
+            document.getElementById("logoutModal").classList.add("show");
+        }
+
+        function closeLogoutModal() {
+            document.getElementById("logoutOverlay").classList.remove("show");
+            document.getElementById("logoutModal").classList.remove("show");
+        }
+
+        function logout() {
+            fetch('/logout', { method: 'POST' })
+            .then(r => r.json())
+            .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+        }
+
+        function confirmLogout() {
+            closeLogoutModal();
+            logout();
+        }
+
+        function toggleNotificationDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const dropdown = document.getElementById("notificationMenu");
+            dropdown.classList.toggle("show");
+            loadNotificationDropdown();
+        }
+
+        function loadNotificationDropdown() {
+            const container = document.getElementById("notificationList");
+            if (container.children.length > 0) return;
+            
+            fetch("/api/announcements")
+                .then(res => res.json())
+                .then(data => {
+                    container.innerHTML = "";
+                    if (data.length === 0) {
+                        container.innerHTML = '<div class="notification-empty">No announcements</div>';
+                        return;
+                    }
+                    data.slice(0, 5).forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = "notification-item";
+                        div.innerHTML = `
+                            <div class="notification-item-title">${item.title}</div>
+                            <div class="notification-item-date">${new Date(item.created_at).toLocaleDateString()}</div>
+                            <div class="notification-item-desc">${item.description}</div>
+                        `;
+                        container.appendChild(div);
+                    });
+                });
+        }
+
+        document.addEventListener("click", function(event) {
+            const dropdown = document.getElementById("notificationMenu");
+            const toggle = document.querySelector(".notification-toggle");
+            if (dropdown && toggle && !dropdown.contains(event.target) && !toggle.contains(event.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+
+        window.onload = loadReservations;
+    </script>
+</body>
+</html>
