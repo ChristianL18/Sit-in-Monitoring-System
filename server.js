@@ -390,9 +390,25 @@ app.get('/api/sitin', (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Error fetching records' });
         }
-        res.json(rows);
+        const formattedRows = rows.map(row => ({
+            ...row,
+            time_in: row.time_in ? formatDateTime(row.time_in) : null,
+            time_out: row.time_out ? formatDateTime(row.time_out) : null
+        }));
+        res.json(formattedRows);
     });
 });
+
+function formatDateTime(dateStr) {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 
 // Time out a sit-in record - decrements session by 1
 app.put('/api/sitin/:id/timeout', (req, res) => {

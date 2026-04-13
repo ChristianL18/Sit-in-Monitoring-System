@@ -16,6 +16,7 @@
                 <a href="Student.html">Student</a>
                 <a href="SitIn.html">Sit-in</a>
                 <a href="ViewRecord.html">View Sit-in Record</a>
+                <a href="sit-in-reports.html">Sit-in Reports</a>
                 <a href="feedbackreq.html">Feedbacks</a>
                 <a href="reservationrequest.html">Reservation</a>
             </div>
@@ -142,6 +143,18 @@
         </div>
 </body>
 <script>
+    function formatDateTime(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
     // Search Modal Functions
     function showSearchModal() {
         document.getElementById("searchOverlay").classList.add("show");
@@ -294,8 +307,8 @@
                     <td>${record.year_level || 'N/A'}</td>
                     <td>${record.lab}</td>
                     <td>${record.purpose}</td>
-                    <td>${record.time_in}</td>
-                    <td>${record.time_out || 'Active'}</td>
+<td>${formatDateTime(record.time_in)}</td>
+                            <td>${record.time_out ? formatDateTime(record.time_out) : 'Active'}</td>
                     <td>${record.sessions || 0}</td>
                     <td>${record.status}</td>
                 </tr>
@@ -368,8 +381,8 @@
                     <td>${record.year_level || 'N/A'}</td>
                     <td>${record.lab}</td>
                     <td>${record.purpose}</td>
-                    <td>${record.time_in}</td>
-                    <td>${record.time_out || 'Active'}</td>
+<td>${formatDateTime(record.time_in)}</td>
+                            <td>${record.time_out ? formatDateTime(record.time_out) : 'Active'}</td>
                     <td>${record.status}</td>
                 </tr>
             `).join('');
