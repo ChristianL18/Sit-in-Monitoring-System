@@ -80,6 +80,26 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="leaderboard-section" id="leaderboardSection" style="display: block !important;">
+            <h3>Top Sit-in Leaderboard</h3>
+            <div class="leaderboard-table-container">
+                <table class="leaderboard-table" id="leaderboardTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Course</th>
+                            <th>Total Sessions</th>
+                            <th>Total Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="modal-overlay" id="logoutOverlay"></div>
@@ -210,6 +230,56 @@
 
         function displayReports() {
             displayRecords(filteredRecords);
+            displayLeaderboard();
+        }
+
+        function displayLeaderboard() {
+            const tbody = document.getElementById("leaderboardBody");
+            
+            const studentStats = {};
+            
+            allRecords.forEach(record => {
+                if (record.time_out) {
+                    const studentId = record.student_id;
+                    if (!studentStats[studentId]) {
+                        studentStats[studentId] = {
+                            student_id: record.student_id,
+                            student_name: record.student_name,
+                            course: record.course,
+                            sessions: 0,
+                            totalMinutes: 0
+                        };
+                    }
+                    studentStats[studentId].sessions++;
+                    const inTime = new Date(record.time_in);
+                    const outTime = new Date(record.time_out);
+                    studentStats[studentId].totalMinutes += (outTime - inTime) / (1000 * 60);
+                }
+            });
+            
+            const sortedStudents = Object.values(studentStats)
+                .sort((a, b) => b.totalMinutes - a.totalMinutes)
+                .slice(0, 10);
+            
+            if (sortedStudents.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='6'>No data available - no completed sessions found</td></tr>";
+                return;
+            }
+            
+            tbody.innerHTML = sortedStudents.map((student, index) => {
+                const hours = Math.floor(student.totalMinutes / 60);
+                const mins = Math.floor(student.totalMinutes % 60);
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${student.student_id}</td>
+                        <td>${student.student_name}</td>
+                        <td>${student.course || 'N/A'}</td>
+                        <td>${student.sessions}</td>
+                        <td>${hours}h ${mins}m</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function calculateDuration(timeIn, timeOut) {
@@ -243,6 +313,7 @@
 
             displayReports();
             updateSummary();
+            displayLeaderboard();
         }
 
         function updateSummary() {
@@ -365,7 +436,6 @@
                                 <p><strong>Name:</strong> ${data.user.first_name} ${data.user.last_name}</p>
                                 <p><strong>Course:</strong> ${data.user.course}</p>
                                 <p><strong>Year:</strong> ${data.user.year_level}</p>
-                            </div>
                         `;
                     } else {
                         resultDiv.innerHTML = "<p>User not found</p>";

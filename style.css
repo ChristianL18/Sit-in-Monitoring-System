@@ -1237,6 +1237,72 @@
             border-bottom: none;
         }
 
+        .leaderboard-section {
+            margin-top: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: block;
+            visibility: visible;
+        }
+
+        .leaderboard-section h3 {
+            color: #4D2FB2;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .leaderboard-table-container {
+            overflow-x: auto;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Tahoma, sans-serif;
+        }
+
+        .leaderboard-table thead {
+            background: #4D2FB2;
+            color: white;
+        }
+
+        .leaderboard-table th {
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .leaderboard-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .leaderboard-table tbody tr:hover {
+            background: #f5f3ff;
+        }
+
+        .leaderboard-table tbody tr:first-child td:first-child {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .leaderboard-table tbody tr:nth-child(2) td:first-child {
+            color: #C0C0C0;
+            font-weight: bold;
+        }
+
+        .leaderboard-table tbody tr:nth-child(3) td:first-child {
+            color: #CD7F32;
+            font-weight: bold;
+        }
+
         .status-active {
             color: #27ae60;
             font-weight: bold;
