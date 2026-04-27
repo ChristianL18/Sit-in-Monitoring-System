@@ -35,7 +35,7 @@
                     <h1>Student Information</h1>
 
                     <div class="studentpic">
-                        <img src="/images/cat.png" alt="stud-pic" />
+                        <img id="profilePicture" src="/images/cat.png" alt="stud-pic" />
                     </div>
                     <div class="info">
                         <p id="studentName">
@@ -97,39 +97,50 @@
         </main>
 
         <script>
-            // Fetch student info
-            fetch("/api/studentinfo")
-                .then((res) => {
-                    if (!res.ok) throw new Error("Not authenticated");
-                    return res.json();
+           // Fetch student info with cache-busting
+fetch("/api/studentinfo", { cache: "no-store" })
+    .then((res) => {
+        if (!res.ok) throw new Error("Not authenticated");
+        return res.json();
+    })
+    .then((data) => {
+        document.getElementById("nameValue").textContent = data.name || "N/A";
+        document.getElementById("courseValue").textContent = data.course || "N/A";
+        document.getElementById("yearValue").textContent = data.course_level || "N/A";
+        document.getElementById("emailValue").textContent = data.email || "N/A";
+        document.getElementById("addressValue").textContent = data.address || "N/A";
+
+        // Use id_number to fetch sessions and profile
+        const idNumber = data.id_number;
+        if (idNumber) {
+            fetch(`/api/student-sessions/${idNumber}`, { cache: "no-store" })
+                .then(res => res.json())
+                .then(sessionData => {
+                    document.getElementById("sessionValue").textContent = sessionData.sessions;
                 })
-                .then((data) => {
-                    document.getElementById("nameValue").textContent = data.name || "N/A";
-                    document.getElementById("courseValue").textContent = data.course || "N/A";
-                    document.getElementById("yearValue").textContent = data.course_level || "N/A";
-                    document.getElementById("emailValue").textContent = data.email || "N/A";
-                    document.getElementById("addressValue").textContent = data.address || "N/A";
-                    
-                    // Extract ID number from the email or fetch separately
-                    // For now, we'll use a separate API call to get the user's ID
-                    fetch("/api/profile")
-                        .then(res => res.json())
-                        .then(profileData => {
-                            if (profileData.success && profileData.user) {
-                                const idNumber = profileData.user.id_number;
-                                fetch(`/api/student-sessions/${idNumber}`)
-                                    .then(res => res.json())
-                                    .then(sessionData => {
-                                        document.getElementById("sessionValue").textContent = sessionData.sessions;
-                                    });
-                            }
-                        });
-                })
-                .catch((err) => {
-                    console.error("Error fetching student info:", err);
+                .catch(err => {
+                    console.error("Error fetching sessions:", err);
+                    document.getElementById("sessionValue").textContent = "N/A";
                 });
 
-            fetch("/api/announcements")
+            // Fetch profile to get profile picture
+            fetch("/api/profile", { cache: "no-store" })
+                .then(res => res.json())
+                .then(profileData => {
+                    if (profileData.success && profileData.user && profileData.user.profile_picture) {
+                        document.getElementById("profilePicture").src = profileData.user.profile_picture;
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching profile picture:", err);
+                });
+        }
+    })
+    .catch((err) => {
+        console.error("Error fetching student info:", err);
+    });
+
+            fetch("/api/announcements", { cache: "no-store" })
                 .then((res) => res.json())
                 .then((data) => {
                     const container = document.getElementById("announcements");
