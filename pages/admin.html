@@ -130,6 +130,38 @@
                 <button onclick="closeSitInModal()">Cancel</button>
             </div>
         </div>
+
+        <!-- Manage Software Modal -->
+        <div class="modal-overlay" id="softwareOverlay"></div>
+        <div class="modal" id="softwareModal">
+            <h3>Manage Laboratory Software</h3>
+            <div class="form-group">
+                <label>Select Laboratory</label>
+                <select id="manageSoftwareLab" class="form-select" onchange="loadSoftware()">
+                    <option value="">Select Lab</option>
+                </select>
+            </div>
+            
+            <div id="softwareListContainer" style="margin-top: 20px; max-height: 200px; overflow-y: auto;">
+                <p>Select a lab to view software</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Add New Software</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newSoftwareName" placeholder="Software Name" style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <button onclick="addSoftware()" style="width: auto; padding: 0 15px;">Add</button>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button onclick="closeSoftwareModal()">Close</button>
+            </div>
+        </div>
+
+        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+            <button class="btn" onclick="showSoftwareModal()">Manage Software</button>
+        </div>
 </body>
     <script>
 
@@ -386,5 +418,106 @@
                         });
                 }
             });
+
+            // Software Management Functions
+            function showSoftwareModal() {
+                document.getElementById("softwareOverlay").classList.add("show");
+                document.getElementById("softwareModal").classList.add("show");
+                loadLabs();
+            }
+
+            function closeSoftwareModal() {
+                document.getElementById("softwareOverlay").classList.remove("show");
+                document.getElementById("softwareModal").classList.remove("show");
+                document.getElementById("manageSoftwareLab").value = "";
+                document.getElementById("softwareListContainer").innerHTML = "<p>Select a lab to view software</p>";
+                document.getElementById("newSoftwareName").value = "";
+            }
+
+            function loadLabs() {
+                fetch('/api/labs')
+                    .then(res => res.json())
+                    .then(labs => {
+                        const select = document.getElementById("manageSoftwareLab");
+                        const currentVal = select.value;
+                        select.innerHTML = '<option value="">Select Lab</option>';
+                        labs.forEach(lab => {
+                            const option = document.createElement("option");
+                            option.value = lab;
+                            option.textContent = lab;
+                            select.appendChild(option);
+                        });
+                        if (currentVal) select.value = currentVal;
+                    });
+            }
+
+            function loadSoftware() {
+                const lab = document.getElementById("manageSoftwareLab").value;
+                const container = document.getElementById("softwareListContainer");
+                
+                if (!lab) {
+                    container.innerHTML = "<p>Select a lab to view software</p>";
+                    return;
+                }
+
+                fetch(`/api/software/${lab}`)
+                    .then(res => res.json())
+                    .then(software => {
+                        if (software.length === 0) {
+                            container.innerHTML = "<p>No software installed in this lab.</p>";
+                        } else {
+                            container.innerHTML = "";
+                            software.forEach(item => {
+                                const div = document.createElement("div");
+                                div.className = "software-item";
+                                div.style = "display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee;";
+                                div.innerHTML = `
+                                    <span>${item.software_name}</span>
+                                    <button onclick="deleteSoftware(${item.id})" style="background: #ff4d4d; width: auto; padding: 2px 10px; font-size: 12px; border: none; color: white; border-radius: 5px; cursor: pointer;">Delete</button>
+                                `;
+                                container.appendChild(div);
+                            });
+                        }
+                    });
+            }
+
+            function addSoftware() {
+                const lab = document.getElementById("manageSoftwareLab").value;
+                const name = document.getElementById("newSoftwareName").value;
+
+                if (!lab || !name) {
+                    alert("Please select a lab and enter software name");
+                    return;
+                }
+
+                fetch('/api/software', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lab_room: lab, software_name: name })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("newSoftwareName").value = "";
+                        loadSoftware();
+                    } else {
+                        alert("Error adding software");
+                    }
+                });
+            }
+
+            function deleteSoftware(id) {
+                if (!confirm("Are you sure you want to delete this software?")) return;
+
+                fetch(`/api/software/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        loadSoftware();
+                    } else {
+                        alert("Error deleting software");
+                    }
+                });
+            }
 </script>
 </html>

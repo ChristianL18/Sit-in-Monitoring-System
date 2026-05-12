@@ -633,6 +633,57 @@ createTableNotifications();
 
 createTableReservations();
 
+// Create lab_software table
+function createTableLabSoftware() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS lab_software (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lab_room TEXT NOT NULL,
+            software_name TEXT NOT NULL
+        )
+    `, (err) => {
+        if (!err) {
+            // Seed the table with 7 examples for ALL labs if it's empty
+            db.get("SELECT COUNT(*) as count FROM lab_software", [], (err, row) => {
+                if (row && row.count === 0) {
+                    const labs = ["524", "526", "528", "530", "542", "544"];
+                    const software = [
+                        "Visual Studio Code",
+                        "Python IDLE",
+                        "Android Studio",
+                        "NetBeans",
+                        "Eclipse",
+                        "MySQL Workbench",
+                        "Cisco Packet Tracer"
+                    ];
+                    
+                    const stmt = db.prepare("INSERT INTO lab_software (lab_room, software_name) VALUES (?, ?)");
+                    labs.forEach(lab => {
+                        software.forEach(sw => {
+                            stmt.run([lab, sw]);
+                        });
+                        // Add XAMPP specifically to 524, 530, and 544
+                        if (["524", "530", "544"].includes(lab)) {
+                            stmt.run([lab, "XAMPP"]);
+                        }
+                    });
+                    stmt.finalize();
+                }
+                
+                // Ensure XAMPP is added to 524, 530, 544 even if table was already partially filled
+                ["524", "530", "544"].forEach(lab => {
+                    db.get("SELECT id FROM lab_software WHERE lab_room = ? AND software_name = ?", [lab, "XAMPP"], (err, row) => {
+                        if (!row) {
+                            db.run("INSERT INTO lab_software (lab_room, software_name) VALUES (?, ?)", [lab, "XAMPP"]);
+                        }
+                    });
+                });
+            });
+        }
+    });
+}
+createTableLabSoftware();
+
 // Get PC availability
 app.get('/api/pcs', (req, res) => {
     const { lab, date, timeIn } = req.query;
@@ -781,7 +832,6 @@ app.post('/api/feedback', (req, res) => {
         });
     }
 });
-
 // Get all feedback (for admin)
 app.get('/api/feedback', (req, res) => {
     db.all("SELECT * FROM feedback ORDER BY created_at DESC", [], (err, rows) => {
@@ -797,6 +847,46 @@ app.delete('/api/feedback/:id', (req, res) => {
     db.run("DELETE FROM feedback WHERE id = ?", [req.params.id], function(err) {
         if (err) {
             return res.status(500).json({ error: "Failed to delete feedback" });
+        }
+        res.json({ success: true });
+    });
+});
+
+// API for Lab Software Management
+const LABS = ["524", "526", "528", "530", "542", "544"];
+
+app.get('/api/labs', (req, res) => {
+    res.json(LABS);
+});
+
+app.get('/api/software/:lab', (req, res) => {
+    const lab = req.params.lab;
+    db.all("SELECT * FROM lab_software WHERE lab_room = ?", [lab], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: "Database error" });
+        }
+        res.json(rows);
+    });
+});
+
+app.post('/api/software', (req, res) => {
+    const { lab_room, software_name } = req.body;
+    if (!lab_room || !software_name) {
+        return res.json({ success: false, error: "Lab room and software name are required" });
+    }
+    
+    db.run("INSERT INTO lab_software (lab_room, software_name) VALUES (?, ?)", [lab_room, software_name], function(err) {
+        if (err) {
+            return res.status(500).json({ success: false, error: "Database error" });
+        }
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+app.delete('/api/software/:id', (req, res) => {
+    db.run("DELETE FROM lab_software WHERE id = ?", [req.params.id], function(err) {
+        if (err) {
+            return res.status(500).json({ success: false, error: "Database error" });
         }
         res.json({ success: true });
     });

@@ -1698,6 +1698,10 @@
         /* Sit-in Modal specific width */
         #sitInModal {
             width: 500px;
+        }
+
+        #softwareModal {
+            width: 500px;
             max-width: 90%;
         }
 

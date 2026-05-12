@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/style.css">
-    <title>Software</title>
+    <title>Software Availability</title>
 </head>
 <body>  
     <div class="nav">
@@ -31,6 +31,176 @@
             <button type="" onclick="showLogoutModal()">Log out</button>
         </div>
 
-        
+        <div class="software-page-container" style="max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: Tahoma, sans-serif;">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h2 style="color: #4D2FB2; font-size: 32px; margin-bottom: 10px;">Laboratory Software</h2>
+                <p style="color: #666;">Select a laboratory room to view installed software applications.</p>
+            </div>
+
+            <div style="display: flex; gap: 40px; align-items: flex-start;">
+                <!-- Lab Selection Sidebar -->
+                <div style="width: 300px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee;">
+                    <h3 style="color: #4D2FB2; margin-bottom: 20px; font-size: 18px;">Select Laboratory</h3>
+                    <div class="form-group">
+                        <select id="labSelect" class="form-select" style="width: 100%;" onchange="displaySoftware(this.value)">
+                            <option value="">Choose a Lab...</option>
+                            <option value="524">Lab 524</option>
+                            <option value="526">Lab 526</option>
+                            <option value="528">Lab 528</option>
+                            <option value="530">Lab 530</option>
+                            <option value="542">Lab 542</option>
+                            <option value="544">Lab 544</option>
+                        </select>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 13px; color: #888;">
+                        <p>Available labs are listed above. Software information is updated regularly by the administrator.</p>
+                    </div>
+                </div>
+
+                <!-- Software Display Area -->
+                <div id="displayArea" style="flex: 1; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee; min-height: 400px;">
+                    <div id="emptyState" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #999; text-align: center; padding-top: 50px;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">📂</div>
+                        <h3>No Lab Selected</h3>
+                        <p>Please choose a laboratory room from the sidebar to view its available software.</p>
+                    </div>
+
+                    <div id="softwareContent" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 20px;">
+                            <h3 id="currentLabTitle" style="color: #4D2FB2; font-size: 24px;">Software in Lab 524</h3>
+                            <span style="background: #f0f0f0; padding: 5px 12px; border-radius: 20px; font-size: 12px; color: #666; font-weight: bold;">Status: Updated</span>
+                        </div>
+                        <div id="softwareList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                            <!-- Software cards will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logout Confirmation Modal -->
+        <div class="modal-overlay" id="logoutOverlay"></div>
+        <div class="modal" id="logoutModal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div class="modal-buttons">
+                <button onclick="confirmLogout()">Yes, Log Out</button>
+                <button onclick="closeLogoutModal()">Cancel</button>
+            </div>
+        </div>
+
+        <script>
+            function displaySoftware(lab) {
+                const emptyState = document.getElementById("emptyState");
+                const softwareContent = document.getElementById("softwareContent");
+                const currentLabTitle = document.getElementById("currentLabTitle");
+                const list = document.getElementById("softwareList");
+
+                if (!lab) {
+                    emptyState.style.display = "flex";
+                    softwareContent.style.display = "none";
+                    return;
+                }
+
+                emptyState.style.display = "none";
+                softwareContent.style.display = "block";
+                currentLabTitle.textContent = "Software in Lab " + lab;
+                list.innerHTML = "<p>Loading applications...</p>";
+
+                fetch(`/api/software/${lab}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            list.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: #888; padding: 40px;'>No software applications currently listed for this lab.</p>";
+                        } else {
+                            list.innerHTML = "";
+                            data.forEach(item => {
+                                const card = document.createElement("div");
+                                card.style = "background: #f9f9f9; padding: 20px; border-radius: 12px; border: 1px solid #eee; display: flex; align-items: center; transition: all 0.3s ease; cursor: default;";
+                                card.onmouseover = () => { card.style.backgroundColor = "#fff"; card.style.borderColor = "#4D2FB2"; card.style.transform = "translateY(-3px)"; card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.05)"; };
+                                card.onmouseout = () => { card.style.backgroundColor = "#f9f9f9"; card.style.borderColor = "#eee"; card.style.transform = "translateY(0)"; card.style.boxShadow = "none"; };
+                                
+                                card.innerHTML = `
+                                    <div style="background: #4D2FB2; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; margin-right: 15px; font-size: 18px;">
+                                        💻
+                                    </div>
+                                    <div style="font-weight: bold; color: #333;">${item.software_name}</div>
+                                `;
+                                list.appendChild(card);
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        list.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: red;'>Error loading software data. Please try again later.</p>";
+                    });
+            }
+
+            function showLogoutModal() {
+                document.getElementById("logoutOverlay").classList.add("show");
+                document.getElementById("logoutModal").classList.add("show");
+            }
+
+            function closeLogoutModal() {
+                document.getElementById("logoutOverlay").classList.remove("show");
+                document.getElementById("logoutModal").classList.remove("show");
+            }
+
+            function confirmLogout() {
+                fetch('/logout', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = data.redirectUrl;
+                        }
+                    });
+            }
+
+            // Notification dropdown logic
+            function toggleNotificationDropdown(event) {
+                event.preventDefault();
+                const menu = document.getElementById("notificationMenu");
+                menu.classList.toggle("show");
+            }
+
+            // Close notification menu when clicking outside
+            window.onclick = function(event) {
+                if (!event.target.matches('.notification-toggle')) {
+                    const dropdowns = document.getElementsByClassName("notification-menu");
+                    for (let i = 0; i < dropdowns.length; i++) {
+                        const openDropdown = dropdowns[i];
+                        if (openDropdown.classList.contains('show')) {
+                            openDropdown.classList.remove('show');
+                        }
+                    }
+                }
+            }
+
+            // Load notifications
+            function loadNotifications() {
+                fetch('/api/notifications')
+                    .then(res => res.json())
+                    .then(data => {
+                        const list = document.getElementById("notificationList");
+                        if (!list) return;
+                        list.innerHTML = "";
+                        
+                        if (!data.announcements || data.announcements.length === 0) {
+                            list.innerHTML = '<div class="notification-item">No new announcements</div>';
+                        } else {
+                            data.announcements.forEach(item => {
+                                const div = document.createElement("div");
+                                div.className = "notification-item";
+                                div.innerHTML = `
+                                    <div class="notification-title">${item.title}</div>
+                                    <div class="notification-desc">${item.description}</div>
+                                `;
+                                list.appendChild(div);
+                            });
+                        }
+                    });
+            }
+
+            loadNotifications();
+        </script>
 </body>
 </html>
