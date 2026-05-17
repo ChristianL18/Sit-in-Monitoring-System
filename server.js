@@ -539,7 +539,7 @@ app.put('/api/reset-sessions/:idNumber', (req, res) => {
 
 // Get language/purpose statistics
 app.get('/api/language-stats', (req, res) => {
-    db.all("SELECT purpose, COUNT(*) as count FROM sitin WHERE status = 'active' GROUP BY purpose ORDER BY count DESC", [], (err, rows) => {
+    db.all("SELECT purpose, COUNT(*) as count FROM sitin GROUP BY purpose ORDER BY count DESC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: 'Error' });
         
         const labels = rows.map(row => row.purpose);
@@ -946,6 +946,30 @@ app.put("/api/profile", (req, res) => {
         res.json({ success: true, message: "Profile updated successfully" });
     });
 });
+
+// Auto-timeout sit-ins that exceed the 2-hour time limit
+setInterval(() => {
+    db.all("SELECT id, student_id, sessions FROM sitin WHERE status = 'active' AND time_in <= datetime('now', '-2 hours')", [], (err, rows) => {
+        if (err || !rows) return;
+        
+        const timeOut = new Date().toISOString();
+        
+        rows.forEach(row => {
+            const currentSessions = row.sessions !== null && row.sessions !== undefined ? row.sessions : 30;
+            const newSessions = Math.max(0, currentSessions - 1);
+            
+            const sql = `UPDATE sitin SET time_out = ?, status = 'completed', sessions = ? WHERE id = ?`;
+            
+            db.run(sql, [timeOut, newSessions, row.id], function(err) {
+                if (!err && row.student_id) {
+                    db.run("UPDATE users SET remaining_sessions = ? WHERE id_number = ?", [newSessions, row.student_id], (updateErr) => {
+                        if (updateErr) console.error("Failed to update student sessions:", updateErr);
+                    });
+                }
+            });
+        });
+    });
+}, 60000); // Check every minute
 
 /* Start server */
 app.listen(PORT, () => {
