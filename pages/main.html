@@ -101,7 +101,14 @@
            // Fetch student info with cache-busting
 fetch("/api/studentinfo", { cache: "no-store" })
     .then((res) => {
-        if (!res.ok) throw new Error("Not authenticated");
+        if (!res.ok) {
+            if (res.status === 401) {
+                // Redirect to Login if the user is not authenticated
+                window.location.href = "/pages/Login.html";
+                throw new Error("Not authenticated");
+            }
+            throw new Error("Server error");
+        }
         return res.json();
     })
     .then((data) => {
@@ -139,6 +146,14 @@ fetch("/api/studentinfo", { cache: "no-store" })
     })
     .catch((err) => {
         console.error("Error fetching student info:", err);
+        if (err.message !== "Not authenticated") {
+            document.getElementById("nameValue").textContent = "Error loading";
+            document.getElementById("courseValue").textContent = "Error loading";
+            document.getElementById("yearValue").textContent = "Error loading";
+            document.getElementById("emailValue").textContent = "Error loading";
+            document.getElementById("addressValue").textContent = "Error loading";
+            document.getElementById("sessionValue").textContent = "Error loading";
+        }
     });
 
             fetch("/api/announcements", { cache: "no-store" })
