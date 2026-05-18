@@ -261,7 +261,14 @@ app.post("/login", async (req, res) => {
             if (passwordMatch) {
                 req.session.userId = admin.id;
                 req.session.isAdmin = true;
-                return res.json({ success: true, redirectUrl: '/pages/admin.html' });
+                req.session.save((saveErr) => {
+                    if (saveErr) {
+                        console.log(saveErr);
+                        return res.json({ success: false, error: "Session save failed" });
+                    }
+                    return res.json({ success: true, redirectUrl: '/pages/admin.html' });
+                });
+                return;
             }
         }
         
@@ -279,10 +286,19 @@ app.post("/login", async (req, res) => {
                 // Check if user is admin (using id_number 'admin' for admin access)
                 if (user.id_number === 'admin') {
                     req.session.isAdmin = true;
-                    res.json({ success: true, redirectUrl: '/pages/admin.html' });
-                } else {
-                    res.json({ success: true, redirectUrl: '/pages/main.html' });
                 }
+                
+                req.session.save((saveErr) => {
+                    if (saveErr) {
+                        console.log(saveErr);
+                        return res.json({ success: false, error: "Session save failed" });
+                    }
+                    if (req.session.isAdmin) {
+                        res.json({ success: true, redirectUrl: '/pages/admin.html' });
+                    } else {
+                        res.json({ success: true, redirectUrl: '/pages/main.html' });
+                    }
+                });
             } else {
                 res.json({ success: false, error: "Invalid ID Number or Password" });
             }
