@@ -562,6 +562,64 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
+// Get top 10 students leaderboard
+app.get('/api/leaderboard', (req, res) => {
+    const sql = `
+        SELECT 
+            s.student_name, 
+            s.student_id, 
+            COUNT(*) as count,
+            u.profile_picture,
+            SUM(
+                CASE 
+                    WHEN s.time_out IS NOT NULL AND s.time_in IS NOT NULL 
+                    THEN (strftime('%s', s.time_out) - strftime('%s', s.time_in)) 
+                    ELSE 0 
+                END
+            ) as total_seconds
+        FROM sitin s
+        LEFT JOIN users u ON s.student_id = u.id_number
+        WHERE s.student_id IS NOT NULL AND s.student_name IS NOT NULL AND s.student_name != ''
+        GROUP BY s.student_id, s.student_name, u.profile_picture
+        ORDER BY count DESC 
+        LIMIT 10
+    `;
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Failed to fetch leaderboard" });
+        }
+        
+        function formatTotalTime(totalSeconds) {
+            if (!totalSeconds || totalSeconds < 0) return '0 mins';
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            }
+            return `${minutes}m`;
+        }
+
+        const formattedRows = rows.map(row => {
+            const totalSeconds = row.total_seconds || 0;
+            const minutes = Math.floor(totalSeconds / 60);
+            const points = (row.count * 100) + minutes;
+            
+            return {
+                student_name: row.student_name,
+                student_id: row.student_id,
+                count: row.count,
+                profile_picture: row.profile_picture,
+                total_time_formatted: formatTotalTime(totalSeconds),
+                points: points
+            };
+        });
+        
+        res.json(formattedRows);
+    });
+});
+
 // Get student remaining sessions
 app.get('/api/student-sessions/:idNumber', (req, res) => {
     db.get("SELECT remaining_sessions FROM users WHERE id_number = ?", [req.params.idNumber], (err, row) => {

@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .software-badge {
+            background: linear-gradient(135deg, #f0ebff, #e3dcff);
+            color: #4D2FB2;
+            border: 1px solid rgba(77, 47, 178, 0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(77, 47, 178, 0.05);
+        }
+        
+        .software-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(77, 47, 178, 0.12);
+            background: linear-gradient(135deg, #e3dcff, #d4ccff);
+        }
+        
+        .no-software-text {
+            color: #888;
+            font-style: italic;
+            font-size: 14px;
+        }
+    </style>
     <title>Reservation</title>
 </head>
 <body>
@@ -95,6 +122,14 @@
                         </div>
                     </div>
 
+                    <!-- Software Availability Display -->
+                    <div class="software-availability-section" id="softwareAvailabilitySection" style="margin-bottom: 20px; display: none;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #444;">Available Software in Lab</label>
+                        <div id="softwareList" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <!-- Software badges will be injected here -->
+                        </div>
+                    </div>
+
                     <div class="pcselection">
                         <label>Select PC</label>
                         <button type="button" class="pcselectbtn" onclick="openPCModal()">
@@ -144,6 +179,48 @@
             .catch(err => {
                 console.error('Error loading profile:', err);
             });
+
+        function loadPCs() {
+            selectedPC = null;
+            document.getElementById('selectedPCText').textContent = 'Select PC';
+            loadLabSoftware();
+        }
+
+        function loadLabSoftware() {
+            const lab = document.getElementById('labSelect').value;
+            const container = document.getElementById('softwareList');
+            const section = document.getElementById('softwareAvailabilitySection');
+
+            if (!lab) {
+                section.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            fetch(`/api/software/${lab}`)
+                .then(res => res.json())
+                .then(software => {
+                    section.style.display = 'block';
+                    container.innerHTML = '';
+
+                    if (software.length === 0) {
+                        container.innerHTML = '<span class="no-software-text">No software recorded for this laboratory.</span>';
+                        return;
+                    }
+
+                    software.forEach(item => {
+                        const span = document.createElement('span');
+                        span.className = 'software-badge';
+                        span.textContent = item.software_name;
+                        container.appendChild(span);
+                    });
+                })
+                .catch(err => {
+                    console.error('Error loading laboratory software:', err);
+                    section.style.display = 'block';
+                    container.innerHTML = '<span class="no-software-text" style="color: red;">Failed to load software details.</span>';
+                });
+        }
 
         function openPCModal() {
             const lab = document.getElementById('labSelect').value;
