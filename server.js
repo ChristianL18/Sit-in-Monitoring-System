@@ -85,7 +85,9 @@ app.use(session({
 }));
 
 /* Serve static files */
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname)));
+app.use('/pages', express.static(path.join(__dirname, 'pages')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 /* Connect SQLite Database (Using Turso Wrapper) */
 const db = new TursoDatabase(process.env.TURSO_DATABASE_URL, process.env.TURSO_AUTH_TOKEN, (err) => {
