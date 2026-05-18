@@ -174,10 +174,17 @@
                 if (data.success && data.user) {
                     document.getElementById('studentIdValue').textContent = data.user.id_number || 'N/A';
                     document.getElementById('nameValue').textContent = (data.user.first_name + ' ' + data.user.last_name) || 'N/A';
+                } else if (data.error === "Not authenticated") {
+                    window.location.href = "/pages/Login.html";
+                } else {
+                    document.getElementById('studentIdValue').textContent = 'Error';
+                    document.getElementById('nameValue').textContent = 'Error';
                 }
             })
             .catch(err => {
                 console.error('Error loading profile:', err);
+                document.getElementById('studentIdValue').textContent = 'Error';
+                document.getElementById('nameValue').textContent = 'Error';
             });
 
         function loadPCs() {

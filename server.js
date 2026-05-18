@@ -274,8 +274,11 @@ app.post("/login", async (req, res) => {
                 res.json({ success: false, error: "Database error" });
             } else if (user) {
                 req.session.userId = user.id;
+                req.session.isAdmin = false; // Explicitly reset admin status for student logins
+                
                 // Check if user is admin (using id_number 'admin' for admin access)
                 if (user.id_number === 'admin') {
+                    req.session.isAdmin = true;
                     res.json({ success: true, redirectUrl: '/pages/admin.html' });
                 } else {
                     res.json({ success: true, redirectUrl: '/pages/main.html' });
@@ -284,6 +287,18 @@ app.post("/login", async (req, res) => {
                 res.json({ success: false, error: "Invalid ID Number or Password" });
             }
         });
+    });
+});
+
+/* Logout route */
+app.post("/logout", (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.log(err);
+            return res.json({ success: false, error: "Failed to log out" });
+        }
+        res.clearCookie('connect.sid');
+        res.json({ success: true, redirectUrl: '/pages/Login.html' });
     });
 });
 
