@@ -306,17 +306,6 @@ app.post("/login", async (req, res) => {
     });
 });
 
-/* Logout route */
-app.post("/logout", (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            console.log(err);
-            return res.json({ success: false, error: "Failed to log out" });
-        }
-        res.clearCookie('connect.sid');
-        res.json({ success: true, redirectUrl: '/pages/Login.html' });
-    });
-});
 
 // STUDENT INFO API ROUTE - Fetch current user only
 app.get('/api/studentinfo', (req, res) => {
@@ -407,6 +396,7 @@ app.post('/logout', (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Could not log out' });
         }
+        res.clearCookie('connect.sid');
         res.json({ success: true, message: 'Logged out successfully', redirectUrl: '/pages/Login.html' });
     });
 });
