@@ -1,4 +1,4 @@
-    const express = require("express");
+const express = require("express");
 const { createClient } = require("@libsql/client");
 require("dotenv").config();
 
@@ -66,7 +66,7 @@ class TursoDatabase {
     }
 }
 const path = require("path");
-const session = require("express-session");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
 
 const app = express();
@@ -76,12 +76,11 @@ const PORT = 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: '10mb' }));
 
-/* Session middleware */
-app.use(session({
-    secret: "your-secret-key",
-    resave: true,
-    saveUninitialized: true,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+// Replace express-session with cookieSession
+app.use(cookieSession({
+    name: 'session',
+    keys: ['your-secret-key'], // Used to sign the cookie
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
 /* Serve static files */
@@ -261,14 +260,7 @@ app.post("/login", async (req, res) => {
             if (passwordMatch) {
                 req.session.userId = admin.id;
                 req.session.isAdmin = true;
-                req.session.save((saveErr) => {
-                    if (saveErr) {
-                        console.log(saveErr);
-                        return res.json({ success: false, error: "Session save failed" });
-                    }
-                    return res.json({ success: true, redirectUrl: '/pages/admin.html' });
-                });
-                return;
+                return res.json({ success: true, redirectUrl: '/pages/admin.html' });
             }
         }
         
@@ -288,17 +280,11 @@ app.post("/login", async (req, res) => {
                     req.session.isAdmin = true;
                 }
                 
-                req.session.save((saveErr) => {
-                    if (saveErr) {
-                        console.log(saveErr);
-                        return res.json({ success: false, error: "Session save failed" });
-                    }
-                    if (req.session.isAdmin) {
-                        res.json({ success: true, redirectUrl: '/pages/admin.html' });
-                    } else {
-                        res.json({ success: true, redirectUrl: '/pages/main.html' });
-                    }
-                });
+                if (req.session.isAdmin) {
+                    res.json({ success: true, redirectUrl: '/pages/admin.html' });
+                } else {
+                    res.json({ success: true, redirectUrl: '/pages/main.html' });
+                }
             } else {
                 res.json({ success: false, error: "Invalid ID Number or Password" });
             }
@@ -392,13 +378,9 @@ app.delete('/api/users/:idNumber', (req, res) => {
 
 // Logout route
 app.post('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ error: 'Could not log out' });
-        }
-        res.clearCookie('connect.sid');
-        res.json({ success: true, message: 'Logged out successfully', redirectUrl: '/pages/Login.html' });
-    });
+    req.session = null; // Cleanly destroys the cookie-session!
+    res.clearCookie('session'); // Clears the cookie on the browser
+    res.json({ success: true, message: 'Logged out successfully', redirectUrl: '/pages/Login.html' });
 });
 
 
