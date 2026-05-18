@@ -947,9 +947,9 @@ app.put("/api/profile", (req, res) => {
     });
 });
 
-// Auto-timeout sit-ins that exceed the 2-hour time limit
+// Auto-timeout sit-ins that exceed the 3-hour time limit
 setInterval(() => {
-    db.all("SELECT id, student_id, sessions FROM sitin WHERE status = 'active' AND time_in <= datetime('now', '-2 hours')", [], (err, rows) => {
+    db.all("SELECT id, student_id, sessions FROM sitin WHERE status = 'active' AND time_in <= datetime('now', '-3 hours')", [], (err, rows) => {
         if (err || !rows) return;
         
         const timeOut = new Date().toISOString();

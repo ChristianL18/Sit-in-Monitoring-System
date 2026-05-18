@@ -191,7 +191,14 @@
                 const status = pcStatus[pcNum] || 'available';
                 const pcDiv = document.createElement('div');
                 pcDiv.className = `pc-box pc-${status} ${selectedPC === pcNum ? 'selected' : ''}`;
-                pcDiv.textContent = pcNum;
+                
+                if (status === 'unavailable') {
+                    pcDiv.textContent = 'Occupied';
+                    pcDiv.style.fontSize = '11px';
+                } else {
+                    pcDiv.textContent = pcNum;
+                }
+                
                 pcDiv.onclick = () => selectPC(pcNum, status);
                 grid.appendChild(pcDiv);
             }
