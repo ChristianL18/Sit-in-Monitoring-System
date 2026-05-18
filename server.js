@@ -1,5 +1,70 @@
     const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
+const { createClient } = require("@libsql/client");
+require("dotenv").config();
+
+class TursoDatabase {
+    constructor(url, authToken, callback) {
+        try {
+            this.client = createClient({
+                url: url || process.env.TURSO_DATABASE_URL || "file:./database.db",
+                authToken: authToken || process.env.TURSO_AUTH_TOKEN
+            });
+            if (callback) callback(null);
+        } catch (err) {
+            if (callback) callback(err);
+        }
+    }
+
+    run(sql, params, callback) {
+        if (typeof params === 'function') {
+            callback = params;
+            params = [];
+        }
+        this.client.execute({ sql, args: params || [] })
+            .then(result => {
+                const context = {
+                    lastID: result.lastInsertRowid ? Number(result.lastInsertRowid) : undefined,
+                    changes: result.rowsAffected
+                };
+                if (callback) callback.call(context, null);
+            })
+            .catch(err => {
+                if (callback) callback(err);
+            });
+        return this;
+    }
+
+    get(sql, params, callback) {
+        if (typeof params === 'function') {
+            callback = params;
+            params = [];
+        }
+        this.client.execute({ sql, args: params || [] })
+            .then(result => {
+                const row = result.rows.length > 0 ? result.rows[0] : undefined;
+                if (callback) callback(null, row);
+            })
+            .catch(err => {
+                if (callback) callback(err);
+            });
+        return this;
+    }
+
+    all(sql, params, callback) {
+        if (typeof params === 'function') {
+            callback = params;
+            params = [];
+        }
+        this.client.execute({ sql, args: params || [] })
+            .then(result => {
+                if (callback) callback(null, result.rows);
+            })
+            .catch(err => {
+                if (callback) callback(err);
+            });
+        return this;
+    }
+}
 const path = require("path");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
@@ -22,12 +87,12 @@ app.use(session({
 /* Serve static files */
 app.use(express.static(__dirname));
 
-/* Connect SQLite Database */
-const db = new sqlite3.Database("./database.db", (err) => {
+/* Connect SQLite Database (Using Turso Wrapper) */
+const db = new TursoDatabase(process.env.TURSO_DATABASE_URL, process.env.TURSO_AUTH_TOKEN, (err) => {
     if (err) {
-        console.log("Database connection error");
+        console.log("Database connection error", err);
     } else {
-        console.log("Connected to SQLite database");
+        console.log("Connected to Turso/SQLite database");
     }
 });
 
@@ -972,6 +1037,10 @@ setInterval(() => {
 }, 60000); // Check every minute
 
 /* Start server */
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running at http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;
