@@ -1040,7 +1040,7 @@ createTableFeedback();
 
 /* Get user profile */
 app.get("/api/profile", (req, res) => {
-    if (!req.session.userId || req.session.isAdmin) {
+    if (!req.session.userId) {
         return res.json({ success: false, error: "Not authenticated" });
     }
     
@@ -1064,7 +1064,7 @@ app.get("/api/profile", (req, res) => {
 
 /* Update user profile */
 app.put("/api/profile", (req, res) => {
-    if (!req.session.userId || req.session.isAdmin) {
+    if (!req.session.userId) {
         return res.json({ success: false, error: "Not authenticated" });
     }
     
