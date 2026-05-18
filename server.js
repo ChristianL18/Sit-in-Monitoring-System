@@ -620,6 +620,10 @@ app.get('/api/language-stats', (req, res) => {
 createTableSitIn();
 
 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 app.get('/SitIn.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'pages/SitIn.html'));
 });
