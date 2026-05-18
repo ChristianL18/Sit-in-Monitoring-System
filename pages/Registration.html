@@ -61,7 +61,7 @@
                 <option value="2nd Year">2nd Year</option>
                 <option value="3rd Year">3rd Year</option>
                 <option value="4th Year">4th Year</option>
-                <option value="4th Year">5ft Year</option>
+                <option value="5th Year">5th Year</option>
             </select>
 
             <input type="text" name="address" placeholder="Address" required>
@@ -80,22 +80,40 @@
         document.getElementById("registerForm").addEventListener("submit", async function(e) {
             e.preventDefault();
             
+            const password = this.querySelector('input[name="password"]').value;
+            const confirmPassword = this.querySelector('input[name="confirm_password"]').value;
+            
+            if (password !== confirmPassword) {
+                window.alert("Passwords do not match!");
+                return;
+            }
+            
+            if (password.length < 6) {
+                window.alert("Password must be at least 6 characters!");
+                return;
+            }
+            
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
             
-            const response = await fetch("http://localhost:3000/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
-            
-            const result = await response.text();
-            
-            if (result.includes("Successful")) {
-                window.alert("Registration Successfully");
-                window.location.href = "/pages/Login.html";
-            } else {
-                alert("Registration failed. Please try again.");
+            try {
+                const response = await fetch("/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.text();
+                
+                if (result.includes("Successful")) {
+                    window.alert("Registration Successfully");
+                    window.location.href = "/pages/Login.html";
+                } else {
+                    window.alert("Registration failed: " + result);
+                }
+            } catch (error) {
+                console.error("Registration error:", error);
+                window.alert("Registration failed. Please make sure the server is running and try again.");
             }
         });
     </script>
