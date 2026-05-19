@@ -162,7 +162,37 @@
             </div>
         </div>
 
-        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+        <!-- Manage PCs Modal -->
+        <div class="modal-overlay" id="pcManagementOverlay"></div>
+        <div class="modal" id="pcManagementModal" style="max-width: 600px;">
+            <h3>Manage Laboratory PCs</h3>
+            <div class="form-group">
+                <label>Select Laboratory</label>
+                <select id="managePCLab" class="form-select" onchange="loadAdminPCs()">
+                    <option value="">Select Lab</option>
+                    <option value="524">Room 524</option>
+                    <option value="526">Room 526</option>
+                    <option value="528">Room 528</option>
+                    <option value="530">Room 530</option>
+                    <option value="542">Room 542</option>
+                    <option value="544">Room 544</option>
+                </select>
+            </div>
+            
+            <div id="adminPCGridContainer" style="margin-top: 20px; display: none;">
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">PC Grid (Click to toggle status)</label>
+                <div class="admin-pc-grid" id="adminPCGrid">
+                    <!-- 50 PCs will be generated here -->
+                </div>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button onclick="closePCManagementModal()">Close</button>
+            </div>
+        </div>
+
+        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; gap: 10px;">
+            <button class="btn" onclick="showPCManagementModal()">Manage PCs</button>
             <button class="btn" onclick="showSoftwareModal()">Manage Software</button>
         </div>
 </body>
@@ -401,7 +431,6 @@
                     if (data.success) {
                         alert("Sit-in recorded successfully!");
                         closeSitInModal();
-                        loadLeaderboard();
                     } else {
                         alert("Error: " + data.error);
                     }
@@ -510,7 +539,7 @@
                 });
             }
 
-            function deleteSoftware(id) {
+             function deleteSoftware(id) {
                 if (!confirm("Are you sure you want to delete this software?")) return;
 
                 fetch(`/api/software/${id}`, { method: 'DELETE' })
@@ -521,6 +550,81 @@
                     } else {
                         alert("Error deleting software");
                     }
+                });
+            }
+
+            // PC Management Functions
+            function showPCManagementModal() {
+                document.getElementById("pcManagementOverlay").classList.add("show");
+                document.getElementById("pcManagementModal").classList.add("show");
+                document.getElementById("managePCLab").value = "";
+                document.getElementById("adminPCGridContainer").style.display = "none";
+            }
+
+            function closePCManagementModal() {
+                document.getElementById("pcManagementOverlay").classList.remove("show");
+                document.getElementById("pcManagementModal").classList.remove("show");
+            }
+
+            function loadAdminPCs() {
+                const lab = document.getElementById("managePCLab").value;
+                const container = document.getElementById("adminPCGridContainer");
+                const grid = document.getElementById("adminPCGrid");
+                
+                if (!lab) {
+                    container.style.display = "none";
+                    grid.innerHTML = "";
+                    return;
+                }
+
+                // Fetch current status of PCs in this lab
+                fetch(`/api/pcs/status?lab=${lab}`)
+                    .then(res => res.json())
+                    .then(pcStatuses => {
+                        container.style.display = "block";
+                        grid.innerHTML = "";
+                        
+                        for (let i = 1; i <= 50; i++) {
+                            const pcNum = 'PC' + i;
+                            const status = pcStatuses[pcNum] || 'enabled';
+                            
+                            const pcCard = document.createElement("div");
+                            pcCard.className = `admin-pc-card ${status}`;
+                            
+                            pcCard.innerHTML = `
+                                <span>${pcNum}</span>
+                                <span class="pc-status-label">${status === 'enabled' ? 'Active' : 'Offline'}</span>
+                            `;
+                            
+                            pcCard.onclick = () => togglePCStatus(lab, pcNum, status);
+                            grid.appendChild(pcCard);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error fetching admin PCs:", err);
+                        alert("Failed to load PC list.");
+                    });
+            }
+
+            function togglePCStatus(lab, pcNum, currentStatus) {
+                const newStatus = currentStatus === 'enabled' ? 'disabled' : 'enabled';
+                
+                fetch('/api/pcs/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lab, pc: pcNum, status: newStatus })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        loadAdminPCs(); // Reload PC grid to reflect new status
+                    } else {
+                        alert("Failed to update PC status: " + (data.error || "Unknown error"));
+                    }
+                })
+                .catch(err => {
+                    console.error("Error toggling PC status:", err);
+                    alert("Error toggling PC status.");
                 });
             }
 </script>

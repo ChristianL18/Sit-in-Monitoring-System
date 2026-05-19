@@ -130,6 +130,17 @@ CREATE TABLE IF NOT EXISTS admins (
 )
 `);
 
+/* Create pc_status table if it doesn't exist */
+db.run(`
+CREATE TABLE IF NOT EXISTS pc_status (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lab_room TEXT NOT NULL,
+    pc_number TEXT NOT NULL,
+    status TEXT DEFAULT 'enabled',
+    UNIQUE(lab_room, pc_number)
+)
+`);
+
 /* Admin Registration Route */
 app.post("/api/admin-register", async (req, res) => {
     const { username, email, password } = req.body;
@@ -862,27 +873,94 @@ app.get('/api/pcs', (req, res) => {
         pcs['PC' + i] = 'available';
     }
     
-    if (date && timeIn) {
-        db.all("SELECT pc, status FROM reservations WHERE lab = ? AND date = ? AND time_in = ?", [lab, date, timeIn], (err, rows) => {
-            if (err) {
-                console.log(err);
-                return res.json(pcs);
-            }
-            
-            rows.forEach(row => {
-                if (row.status === 'approved') {
-                    pcs[row.pc] = 'unavailable';
-                } else {
-                    pcs[row.pc] = 'reserved';
-                }
+    // First query disabled PCs
+    db.all("SELECT pc_number, status FROM pc_status WHERE lab_room = ? AND status = 'disabled'", [lab], (err, disabledRows) => {
+        if (err) {
+            console.error("Error reading pc_status:", err);
+        } else if (disabledRows) {
+            disabledRows.forEach(row => {
+                pcs[row.pc_number] = 'disabled';
             });
-            
+        }
+        
+        if (date && timeIn) {
+            db.all("SELECT pc, status FROM reservations WHERE lab = ? AND date = ? AND time_in = ?", [lab, date, timeIn], (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    return res.json(pcs);
+                }
+                
+                rows.forEach(row => {
+                    // Only overwrite reservation if not disabled
+                    if (pcs[row.pc] !== 'disabled') {
+                        if (row.status === 'approved') {
+                            pcs[row.pc] = 'unavailable';
+                        } else {
+                            pcs[row.pc] = 'reserved';
+                        }
+                    }
+                });
+                
+                res.json(pcs);
+            });
+        } else {
             res.json(pcs);
-        });
-    } else {
-        res.json(pcs);
-    }
+        }
+    });
 });
+
+// Get all PC statuses (admin endpoint)
+app.get('/api/pcs/status', (req, res) => {
+    if (!req.session.userId || !req.session.isAdmin) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    const { lab } = req.query;
+    if (!lab) {
+        return res.json({});
+    }
+    
+    db.all("SELECT pc_number, status FROM pc_status WHERE lab_room = ?", [lab], (err, rows) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Database error" });
+        }
+        
+        const pcStatuses = {};
+        for (let i = 1; i <= 50; i++) {
+            pcStatuses['PC' + i] = 'enabled';
+        }
+        
+        rows.forEach(row => {
+            pcStatuses[row.pc_number] = row.status;
+        });
+        
+        res.json(pcStatuses);
+    });
+});
+
+// Toggle PC status (admin endpoint)
+app.post('/api/pcs/toggle', (req, res) => {
+    if (!req.session.userId || !req.session.isAdmin) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    const { lab, pc, status } = req.body;
+    if (!lab || !pc || !status) {
+        return res.status(400).json({ error: "Bad request. Missing parameters." });
+    }
+    
+    db.run(
+        "INSERT OR REPLACE INTO pc_status (lab_room, pc_number, status) VALUES (?, ?, ?)",
+        [lab, pc, status],
+        function(err) {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: "Failed to toggle PC status" });
+            }
+            res.json({ success: true });
+        }
+    );
+});
+
 
 // Submit reservation
 app.post('/api/reservation', (req, res) => {

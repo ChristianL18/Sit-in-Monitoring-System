@@ -279,6 +279,9 @@
                 if (status === 'unavailable') {
                     pcDiv.textContent = 'Occupied';
                     pcDiv.style.fontSize = '11px';
+                } else if (status === 'disabled') {
+                    pcDiv.textContent = 'Offline';
+                    pcDiv.style.fontSize = '11px';
                 } else {
                     pcDiv.textContent = pcNum;
                 }
@@ -289,7 +292,7 @@
         }
 
         function selectPC(pcNum, status) {
-            if (status === 'unavailable') {
+            if (status !== 'available') {
                 alert('This PC is not available');
                 return;
             }
