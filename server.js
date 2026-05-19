@@ -395,13 +395,23 @@ app.get('/api/announcements', (req, res) => {
 
 // Get all notifications and announcements
 app.get('/api/notifications', (req, res) => {
+    const userId = req.session.userId;
+    if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+    }
+
     db.all('SELECT id, title, description, created_at FROM Annoucements ORDER BY created_at DESC', [], (err, announcements) => {
         if (err) {
             console.log('Announcements error:', err);
             return res.status(500).json({ error: 'Error' });
         }
         
-        db.all('SELECT * FROM notifications ORDER BY created_at DESC', [], (err, notifs) => {
+        const notifQuery = req.session.isAdmin ? 
+            'SELECT * FROM notifications ORDER BY created_at DESC' : 
+            'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC';
+        const params = req.session.isAdmin ? [] : [userId];
+
+        db.all(notifQuery, params, (err, notifs) => {
             if (err) {
                 console.log('Notifications error:', err);
                 return res.status(500).json({ error: 'Error' });
@@ -456,17 +466,40 @@ db.run(`ALTER TABLE users ADD COLUMN remaining_sessions INTEGER DEFAULT 30`, (er
 
 // Get all sit-in records
 app.get('/api/sitin', (req, res) => {
-    db.all("SELECT s.*, u.course, u.course_level as year_level FROM sitin s LEFT JOIN users u ON s.student_id = u.id_number ORDER BY s.time_in DESC", [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error fetching records' });
-        }
-        const formattedRows = rows.map(row => ({
-            ...row,
-            time_in: row.time_in ? formatDateTime(row.time_in) : null,
-            time_out: row.time_out ? formatDateTime(row.time_out) : null
-        }));
-        res.json(formattedRows);
-    });
+    if (!req.session.userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    if (req.session.isAdmin) {
+        db.all("SELECT s.*, u.course, u.course_level as year_level FROM sitin s LEFT JOIN users u ON s.student_id = u.id_number ORDER BY s.time_in DESC", [], (err, rows) => {
+            if (err) {
+                return res.status(500).json({ error: 'Error fetching records' });
+            }
+            const formattedRows = rows.map(row => ({
+                ...row,
+                time_in: row.time_in ? formatDateTime(row.time_in) : null,
+                time_out: row.time_out ? formatDateTime(row.time_out) : null
+            }));
+            res.json(formattedRows);
+        });
+    } else {
+        db.get("SELECT id_number FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+            if (err || !user) {
+                return res.status(500).json({ error: 'User not found' });
+            }
+            db.all("SELECT s.*, u.course, u.course_level as year_level FROM sitin s LEFT JOIN users u ON s.student_id = u.id_number WHERE s.student_id = ? ORDER BY s.time_in DESC", [user.id_number], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Error fetching records' });
+                }
+                const formattedRows = rows.map(row => ({
+                    ...row,
+                    time_in: row.time_in ? formatDateTime(row.time_in) : null,
+                    time_out: row.time_out ? formatDateTime(row.time_out) : null
+                }));
+                res.json(formattedRows);
+            });
+        });
+    }
 });
 
 function formatDateTime(dateStr) {
