@@ -884,7 +884,7 @@ app.get('/api/pcs', (req, res) => {
         }
         
         if (date && timeIn) {
-            db.all("SELECT pc, status FROM reservations WHERE lab = ? AND date = ? AND time_in = ?", [lab, date, timeIn], (err, rows) => {
+            db.all("SELECT pc, status FROM reservations WHERE lab = ? AND date = ? AND time_in = ? AND status IN ('pending', 'approved')", [lab, date, timeIn], (err, rows) => {
                 if (err) {
                     console.log(err);
                     return res.json(pcs);
@@ -983,6 +983,62 @@ app.post('/api/reservation', (req, res) => {
             }
             res.json({ success: true, message: "Reservation submitted successfully" });
         });
+});
+
+// Get logged in student's reservations
+app.get('/api/reservations/my', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, error: "Not authenticated" });
+    }
+    
+    db.get("SELECT id_number FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+        if (err || !user) {
+            return res.status(500).json({ success: false, error: "User not found" });
+        }
+        
+        db.all("SELECT * FROM reservations WHERE student_id = ? ORDER BY id DESC", [user.id_number], (err, rows) => {
+            if (err) {
+                return res.status(500).json({ success: false, error: "Database error" });
+            }
+            res.json(rows);
+        });
+    });
+});
+
+// Cancel a reservation
+app.post('/api/reservation/:id/cancel', (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, error: "Not authenticated" });
+    }
+    
+    const { id } = req.params;
+    
+    db.get("SELECT id_number FROM users WHERE id = ?", [req.session.userId], (err, user) => {
+        if (err || !user) {
+            return res.status(500).json({ success: false, error: "User not found" });
+        }
+        
+        db.get("SELECT * FROM reservations WHERE id = ?", [id], (err, reservation) => {
+            if (err || !reservation) {
+                return res.json({ success: false, error: "Reservation not found" });
+            }
+            
+            if (reservation.student_id !== user.id_number) {
+                return res.status(403).json({ success: false, error: "Access denied" });
+            }
+            
+            if (reservation.status !== 'pending' && reservation.status !== 'approved') {
+                return res.json({ success: false, error: "Only pending or approved reservations can be cancelled" });
+            }
+            
+            db.run("UPDATE reservations SET status = 'cancelled' WHERE id = ?", [id], function(err) {
+                if (err) {
+                    return res.json({ success: false, error: "Database error" });
+                }
+                res.json({ success: true, message: "Reservation cancelled successfully" });
+            });
+        });
+    });
 });
 
 // Get all reservations (admin)

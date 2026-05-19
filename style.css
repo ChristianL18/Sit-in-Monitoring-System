@@ -2541,6 +2541,27 @@
             color: #dc2626;
         }
 
+        .status-cancelled {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-cancel {
+            padding: 8px 16px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-family: Tahoma, sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #dc2626;
+        }
+
         .btn-approve {
             padding: 8px 16px;
             background: #22c55e;

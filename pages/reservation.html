@@ -141,6 +141,30 @@
                 </form>
             </div>
         </div>
+
+        <div class="my-reservations-section" style="padding: 0 30px 30px 30px; margin-top: 20px;">
+            <div class="reservationrequestheader" style="margin-bottom: 20px;">
+                <h2>My Reservations</h2>
+            </div>
+            <div class="reservationrequesttable">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Laboratory</th>
+                            <th>PC</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myReservationsTableBody">
+                        <tr><td colspan="7" style="text-align: center;">Loading your reservations...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <div class="modal-overlay" id="logoutOverlay"></div>
@@ -174,6 +198,7 @@
                 if (data.success && data.user) {
                     document.getElementById('studentIdValue').textContent = data.user.id_number || 'N/A';
                     document.getElementById('nameValue').textContent = (data.user.first_name + ' ' + data.user.last_name) || 'N/A';
+                    loadMyReservations();
                 } else if (data.error === "Not authenticated") {
                     window.location.href = "/pages/Login.html";
                 } else {
@@ -332,6 +357,7 @@
                     document.getElementById('reservationForm').reset();
                     selectedPC = null;
                     document.getElementById('selectedPCText').textContent = 'Select PC';
+                    loadMyReservations();
                 } else {
                     alert('Error: ' + data.error);
                 }
@@ -341,6 +367,61 @@
                 alert('Failed to submit reservation');
             });
         });
+
+        function loadMyReservations() {
+            fetch('/api/reservations/my')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("myReservationsTableBody");
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>No reservations found</td></tr>";
+                    } else {
+                        tbody.innerHTML = data.map(reservation => `
+                            <tr>
+                                <td>Room ${reservation.lab}</td>
+                                <td>${reservation.pc}</td>
+                                <td>${reservation.date}</td>
+                                <td>${reservation.time_in}</td>
+                                <td>${reservation.purpose}</td>
+                                <td><span class="statusbadge status-${reservation.status}">${reservation.status}</span></td>
+                                <td>
+                                    ${(reservation.status === 'pending' || reservation.status === 'approved') ? `
+                                        <button class="btn-cancel" onclick="cancelReservation('${reservation.id}')">Cancel</button>
+                                    ` : '-'}
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading my reservations:', err);
+                    document.getElementById("myReservationsTableBody").innerHTML = "<tr><td colspan='7' style='text-align: center; color: red;'>Error loading reservations</td></tr>";
+                });
+        }
+
+        function cancelReservation(id) {
+            if (!confirm('Are you sure you want to cancel this reservation?')) {
+                return;
+            }
+
+            fetch(`/api/reservation/${id}/cancel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Reservation cancelled successfully!');
+                    loadMyReservations();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Error cancelling reservation:', err);
+                alert('Failed to cancel reservation');
+            });
+        }
 
         function showLogoutModal() {
             document.getElementById("logoutOverlay").classList.add("show");
